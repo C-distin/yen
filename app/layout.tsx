@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { geist } from "@/components/fonts";
+import { Header } from "@/components/layout/header";
 import "./globals.css";
 
 const title = "Yendaakye Job Center";
@@ -30,7 +31,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geist.className} antialiased`}>{children}</body>
+      <body className={`${geist.className} antialiased`}>
+        <Header />
+        {children}
+      </body>
     </html>
   );
 }
