@@ -10,6 +10,8 @@ const description = "A job center that puts the job seeker first.";
 export const metadata: Metadata = {
   title: title,
   description: description,
+  keywords:
+    "yendaakye, job center, recruitment, talent, ghana, west africa job employment",
   openGraph: {
     title: title,
     description: description,

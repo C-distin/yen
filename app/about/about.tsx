@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { motion } from "motion/react";
 import {
   Users,
@@ -373,24 +374,28 @@ export function About() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Button
-                size="lg"
-                className="bg-white text-teal-700 hover:bg-teal-50 font-medium px-8 py-3 rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg"
-              >
-                <Briefcase size={18} className="mr-2" />
-                Find Jobs
-                <ChevronRight size={16} className="ml-2" />
-              </Button>
+              <Link href="/jobs">
+                <Button
+                  size="lg"
+                  className="bg-white text-teal-700 hover:bg-teal-50 font-medium px-8 py-3 rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                >
+                  <Briefcase size={18} className="mr-2" />
+                  Find Jobs
+                  <ChevronRight size={16} className="ml-2" />
+                </Button>
+              </Link>
 
-              <Button
-                size="lg"
-                variant="outline"
-                className="border-white text-white hover:bg-white hover:text-teal-700 font-medium px-8 py-3 rounded-lg transition-all duration-300 hover:scale-105"
-              >
-                <Users size={18} className="mr-2" />
-                Hire Talent
-                <ChevronRight size={16} className="ml-2" />
-              </Button>
+              <Link href="/contact">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-white text-white hover:bg-white hover:text-teal-700 font-medium px-8 py-3 rounded-lg transition-all duration-300 hover:scale-105"
+                >
+                  <Users size={18} className="mr-2" />
+                  Hire Talent
+                  <ChevronRight size={16} className="ml-2" />
+                </Button>
+              </Link>
             </div>
           </motion.div>
         </div>

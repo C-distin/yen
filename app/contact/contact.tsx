@@ -126,19 +126,19 @@ export function Contact() {
     {
       icon: Mail,
       title: "Email Us",
-      content: "info@yendaakye.com",
-      link: "mailto:info@yendaakye.com",
+      content: "yendaakyejobcenter@proton.me",
+      link: "mailto:yendaakyejobcenter@proton.me",
     },
     {
       icon: Phone,
       title: "Call Us",
-      content: "+233 123 456 789",
-      link: "tel:+233123456789",
+      content: "+233 24 888 3460",
+      link: "tel:+233248883460",
     },
     {
       icon: MapPin,
       title: "Visit Us",
-      content: "Accra, Ghana",
+      content: "House No. C/403 Alhaji Sulley Road, Abelemkpe, Accra",
     },
     {
       icon: Clock,

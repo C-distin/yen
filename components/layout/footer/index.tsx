@@ -62,13 +62,13 @@ export function Footer() {
   const contactInfo: ContactInfoProps[] = [
     {
       icon: Mail,
-      text: "info@yendaakye.com",
-      link: "mailto:info@yendaakye.com",
+      text: "yendaakyejobcenter@proton.me",
+      link: "mailto:yendaakyejobcenter@proton.me",
     },
     {
       icon: Phone,
-      text: "+233 123 456 789",
-      link: "tel:+233123456789",
+      text: "+233 24 888 3460",
+      link: "tel:+233248883460",
     },
     {
       icon: MapPin,
