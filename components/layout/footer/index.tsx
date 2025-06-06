@@ -86,7 +86,7 @@ export function Footer() {
             <div className="flex items-center gap-3">
               <div className="relative">
                 <Image
-                  src="/logo.png"
+                  src="/images/logo.png"
                   alt="Yendaakye Logo"
                   width={48}
                   height={48}
