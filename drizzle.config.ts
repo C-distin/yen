@@ -1,5 +1,7 @@
-import "dotenv/config";
 import { defineConfig } from "drizzle-kit";
+import { loadEnvConfig } from "@next/env";
+
+loadEnvConfig(process.cwd());
 
 const connectionString = process.env.DATABASE_URL || "";
 

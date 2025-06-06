@@ -3,7 +3,5 @@ import postgres from "postgres";
 
 const connectionString = process.env.DATABASE_URL || "";
 
-export async function main() {
-  const client = postgres(connectionString, { prepare: false });
-  const db = drizzle({ client });
-}
+const client = postgres(connectionString, { prepare: false });
+export const db = drizzle({ client });
