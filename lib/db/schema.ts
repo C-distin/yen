@@ -1,1 +1,39 @@
-import {} from "drizzle-orm/pg-core";
+import { pgTable, serial, varchar, text, timestamp, integer, boolean } from "drizzle-orm/pg-core";
+
+export const companies = pgTable('companies', {
+    id: serial('id').primaryKey(),
+    name: varchar('name', { length: 256 }).notNull(),
+    logo: text('logo'),
+    description: text('description'),
+    founded: varchar('founded', { length: 50 }), // Adjusted length
+    location: varchar('location', { length: 256 }),
+    employees: varchar('employees', { length: 50 }), // Adjusted length
+    website: varchar('website', { length: 512 }),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  });
+  
+  export const jobs = pgTable('jobs', {
+    id: serial('id').primaryKey(),
+    title: varchar('title', { length: 256 }).notNull(),
+    companyId: integer('company_id').references(() => companies.id).notNull(),
+    logo: text('logo'), // Company logo can be denormalized here or joined
+    location: varchar('location', { length: 256 }).notNull(),
+    salary: varchar('salary', { length: 100 }),
+    type: varchar('type', { length: 50 }).notNull(), // Full-time, Part-time etc.
+    category: varchar('category', { length: 100 }).notNull(),
+    description: text('description').notNull(),
+    requirements: text('requirements').notNull(), // Storing as text, can be JSON/JSONB for structured data
+    benefits: text('benefits').notNull(), // Storing as text, can be JSON/JSONB for structured data
+    postedAt: timestamp('posted_at').defaultNow().notNull(),
+    featured: boolean('featured').default(false),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  });
+  
+  // Infer types for Drizzle (optional but good practice)
+  export type Company = typeof companies.$inferSelect; // for select
+  export type NewCompany = typeof companies.$inferInsert; // for insert
+  
+  export type Job = typeof jobs.$inferSelect; // for select
+  export type NewJob = typeof jobs.$inferInsert; // for insert
