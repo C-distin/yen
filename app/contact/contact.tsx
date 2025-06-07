@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "motion/react";
-import { useForm } from "react-hook-form";
+import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
@@ -13,7 +13,7 @@ import {
   Send,
   CheckCircle,
   AlertCircle,
-  type LucideIcon
+  type LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +27,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { POST } from "@/app/contact/actions";
 
 // Contact form schema with Zod validation
 export const contactFormSchema = z.object({
@@ -52,9 +53,9 @@ export const contactFormSchema = z.object({
     .string()
     .min(10, "Phone number must be at least 10 digits")
     .max(10, "Phone number must not exceed 10 characters"),
-    // .regex(/^[\+]?[\d\s\-\(\)]+$/, "Please enter a valid phone number")
-    // .optional()
-    // .or(z.literal("")),
+  // .regex(/^[\+]?[\d\s\-\(\)]+$/, "Please enter a valid phone number")
+  // .optional()
+  // .or(z.literal("")),
 
   subject: z
     .string()
@@ -102,25 +103,16 @@ export function Contact() {
     },
   });
 
-  const onSubmit = async (data: ContactFormData) => {
-    setIsSubmitting(true);
-    setSubmitStatus("idle");
+  const onSubmit: SubmitHandler<ContactFormData> = async (data) => {
+    const result = await POST(data);
 
-    try {
-      // Simulate API call - replace with actual submission
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      // Here you would typically send the data to your API
-      console.log("Form submitted:", data);
-
+    if (result?.success) {
       setSubmitStatus("success");
       form.reset();
-    } catch (error) {
-      console.error("Submission error:", error);
-      setSubmitStatus("error");
-    } finally {
-      setIsSubmitting(false);
+      return;
     }
+
+    setSubmitStatus("error");
   };
 
   const contactInfo: ContactInfoProps[] = [
