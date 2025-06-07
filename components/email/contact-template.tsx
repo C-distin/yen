@@ -19,15 +19,21 @@ interface Props {
   firstName: string;
   lastName: string;
   email: string;
-  phoneNumber: string;
-  inquiry: string;
+  phone: string;
+  inquiryType: string;
   subject: string;
   message: string;
 }
 
-export function ContactFormEmail(props: Props) {
-  const { firstName, lastName, email, phoneNumber, inquiry, subject, message } =
-    props;
+export const ContactTemplate = ({
+  firstName,
+  lastName,
+  email,
+  phone,
+  inquiryType,
+  subject,
+  message,
+}: Props) => {
 
   return (
     <Html lang="en" dir="ltr">
@@ -93,7 +99,7 @@ export function ContactFormEmail(props: Props) {
                 </Column>
                 <Column>
                   <Text className="text-[14px] text-gray-900 m-0">
-                    {phoneNumber}
+                    {phone}
                   </Text>
                 </Column>
               </Row>
@@ -106,7 +112,7 @@ export function ContactFormEmail(props: Props) {
                 </Column>
                 <Column>
                   <Text className="text-[14px] text-gray-900 m-0">
-                    {inquiry}
+                    {inquiryType}
                   </Text>
                 </Column>
               </Row>

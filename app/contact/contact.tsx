@@ -13,6 +13,7 @@ import {
   Send,
   CheckCircle,
   AlertCircle,
+  type LucideIcon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,7 +29,7 @@ import {
 } from "@/components/ui/form";
 
 // Contact form schema with Zod validation
-const contactFormSchema = z.object({
+export const contactFormSchema = z.object({
   firstName: z
     .string()
     .min(2, "First name must be at least 2 characters")
@@ -50,10 +51,10 @@ const contactFormSchema = z.object({
   phone: z
     .string()
     .min(10, "Phone number must be at least 10 digits")
-    .max(20, "Phone number must not exceed 20 characters")
-    .regex(/^[\+]?[\d\s\-\(\)]+$/, "Please enter a valid phone number")
-    .optional()
-    .or(z.literal("")),
+    .max(10, "Phone number must not exceed 10 characters"),
+    // .regex(/^[\+]?[\d\s\-\(\)]+$/, "Please enter a valid phone number")
+    // .optional()
+    // .or(z.literal("")),
 
   subject: z
     .string()
@@ -73,10 +74,10 @@ const contactFormSchema = z.object({
   ),
 });
 
-type ContactFormData = z.infer<typeof contactFormSchema>;
+export type ContactFormData = z.infer<typeof contactFormSchema>;
 
 interface ContactInfoProps {
-  icon: React.ComponentType<{ size?: number; className?: string }>;
+  icon: LucideIcon;
   title: string;
   content: string;
   link?: string;
