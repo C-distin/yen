@@ -2,7 +2,7 @@
 
 import { Resend } from "resend";
 import { ContactTemplate } from "@/components/email/contact-template";
-import { contactFormSchema, type ContactFormData } from "./contact";
+import { contactFormSchema, type ContactFormData } from "./schema";
 
 // load environment variables
 // require("dotenv").config();
