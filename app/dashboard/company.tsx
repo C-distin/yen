@@ -36,10 +36,16 @@ export function CompanyForm({ initialData }: CompanyFormProps) {
   });
 
   const onSubmit: SubmitHandler<companyData> = async (data) => {
-    if (initialData) {
-      await updateCompany(initialData.id, data);
-    } else {
-      await createCompany(data);
+    try {
+      if (initialData) {
+        await updateCompany(initialData.id, data);
+      } else {
+        await createCompany(data);
+      }
+      form.reset();
+      window.location.reload();
+    } catch (error) {
+      console.log(error);
     }
   };
 
