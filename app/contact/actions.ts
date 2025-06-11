@@ -17,11 +17,12 @@ export async function POST(data: ContactFormData) {
   }
 
   try {
-    const { firstName, lastName, email, phone, inquiryType, subject, message } = result.data;
+    const { firstName, lastName, email, phone, inquiryType, subject, message } =
+      result.data;
 
     const sendEmail = await resend.emails.send({
       from: "Yendaaky Jobs Center Website <info@yendaakyejobscenter.com>",
-      to: ["Yendaaky <yendaakyejobcenter@proton.me>"],
+      to: ["Yendaaky <yendaakyejobscenter@proton.me>"],
       subject: `${inquiryType}: ${subject}`,
       react: ContactTemplate({
         firstName,
