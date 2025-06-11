@@ -7,7 +7,9 @@ import { eq } from "drizzle-orm";
 
 // create company action
 export async function createCompany(data: typeof companies.$inferInsert) {
-  await db.insert(companies).values(data);
+  await db
+    .insert(companies)
+    .values({ ...data, createdAt: new Date(), updatedAt: new Date() });
   redirect("/bashboard");
 }
 
@@ -16,7 +18,10 @@ export async function updateCompany(
   id: number,
   data: typeof companies.$inferInsert,
 ) {
-  await db.update(companies).set(data).where(eq(companies.id, id));
+  await db
+    .update(companies)
+    .set({ ...data, updatedAt: new Date() })
+    .where(eq(companies.id, id));
   redirect("/bashboard");
 }
 
@@ -31,13 +36,21 @@ export async function deleteCompany(id: number) {
 
 // create job action
 export async function createJob(data: typeof jobs.$inferInsert) {
-  await db.insert(jobs).values(data);
+  await db.insert(jobs).values({
+    ...data,
+    postedAt: new Date(),
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  });
   redirect("/bashboard");
 }
 
 // update job action
 export async function updateJob(id: number, data: typeof jobs.$inferInsert) {
-  await db.update(jobs).set(data).where(eq(jobs.id, id));
+  await db
+    .update(jobs)
+    .set({ ...data, updatedAt: new Date() })
+    .where(eq(jobs.id, id));
   redirect("/bashboard");
 }
 
