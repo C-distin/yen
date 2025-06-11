@@ -48,7 +48,7 @@ export const ContactTemplate = ({
             {/* Header with Logo and Company Name */}
             <Section className="text-center mb-[32px]">
               <Img
-                src="/images/logo.png"
+                src="https://www.yendaakyejobscenter.com/_next/image?url=%2Fimages%2Flogo.png"
                 alt="Yendaakye Job Center Logo"
                 className="w-full h-auto object-cover max-w-[120px] mx-auto mb-[16px] rounded-[8px]"
               />
