@@ -104,15 +104,24 @@ export function Contact() {
   });
 
   const onSubmit: SubmitHandler<ContactFormData> = async (data) => {
-    const result = await POST(data);
-
-    if (result?.success) {
-      setSubmitStatus("success");
-      form.reset();
-      return;
+    setIsSubmitting(true); // Start loading state
+    setSubmitStatus("idle"); // Reset previous status
+  
+    try {
+      const result = await POST(data);
+  
+      if (result?.success) {
+        setSubmitStatus("success");
+        form.reset(); // Clear form only on success
+      } else {
+        setSubmitStatus("error");
+      }
+    } catch (error) {
+      console.error("Form submission error:", error);
+      setSubmitStatus("error");
+    } finally {
+      setIsSubmitting(false); // End loading state
     }
-
-    setSubmitStatus("error");
   };
 
   const contactInfo: ContactInfoProps[] = [
@@ -363,7 +372,7 @@ export function Contact() {
                           <FormControl>
                             <Input
                               type="tel"
-                              placeholder="+233 123 456 789"
+                              placeholder="123 456 7890"
                               className="h-12 border-slate-200 focus:border-teal-500 focus:ring-teal-500"
                               {...field}
                             />

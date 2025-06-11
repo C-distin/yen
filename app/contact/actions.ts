@@ -5,7 +5,7 @@ import { ContactTemplate } from "@/components/email/contact-template";
 import { contactFormSchema, type ContactFormData } from "./contact";
 
 // load environment variables
-require("dotenv").config();
+// require("dotenv").config();
 
 const resend = new Resend(process.env.RESEND_API_KEY!);
 
