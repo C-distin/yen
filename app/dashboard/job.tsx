@@ -2,6 +2,7 @@
 
 import { jobSchema, type jobData } from "./schema";
 import { useForm, type SubmitHandler } from "react-hook-form";
+import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createJob, updateJob } from "./actions";
 import {
@@ -30,22 +31,64 @@ interface JobFormProps {
   companies: Array<{ id: number; name: string }>;
 }
 
+interface JobProps {
+  id: number
+  title: string
+  companyId: number
+  logo: string
+  location: string
+  salary?: string
+  type: string
+  category: string
+  description: string
+  requirements: string
+  benefits: string
+  postedAt: Date
+  featured: boolean
+  createdAt: Date
+  updatedAt: Date
+}
+
+const jobTypes = [
+  "Full-time",
+  "Part-time",
+  "Contract",
+  "Internship",
+  "Remote"
+]
+const jobCategories = [
+  "Technology",
+  "Marketing",
+  "Finance",
+  "Healthcare",
+  "Education",
+  "Engineering",
+  "Sales",
+  "HR",
+  "Design",
+  "Operations",
+  "Research",
+  "Administration",
+]
+
 export function JobForm({ initialData, companies }: JobFormProps) {
-  const form = useForm<jobData>({
+  const router = useRouter()
+
+  const form = useForm({
     resolver: zodResolver(jobSchema),
-    defaultValues: initialData || {
+    defaultValues: {
       title: "",
       companyId: 0,
       location: "",
       salary: "",
-      type: "Full-time",
-      category: "Other",
+      type: "",
+      category: "",
       description: "",
       requirements: "",
       benefits: "",
       featured: false,
-    },
-  });
+    }
+  })
 
   const onSubmit: SubmitHandler<jobData> = async (data) => {
     try {
@@ -55,9 +98,10 @@ export function JobForm({ initialData, companies }: JobFormProps) {
         await createJob(data);
       }
       form.reset();
-      window.location.reload();
+      router.refresh()
     } catch (error) {
-      console.log(error);
+      console.error("Form submission error:", error);
+      alert("An error occurred while submitting the form.");
     }
   };
 
@@ -93,8 +137,8 @@ export function JobForm({ initialData, companies }: JobFormProps) {
                   Company <span className="text-red-600">*</span>
                 </FormLabel>
                 <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
+                  onValueChange={(value) => field.onChange(Number(value))}
+                  defaultValue={field.value?.toString()}
                 >
                   <FormControl>
                     <SelectTrigger className="h-12 border-slate-200 focus:border-teal-500 focus:ring-teal-500">
@@ -165,17 +209,23 @@ export function JobForm({ initialData, companies }: JobFormProps) {
                 <Select
                   onValueChange={field.onChange}
                   defaultValue={field.value}
-                  className="h-12 border-slate-200 focus:border-teal-500 focus:ring-teal-500"
                 >
-                  <SelectTrigger>
+                  <SelectTrigger
+                    className="h-12 border-slate-200 focus:border-teal-500 focus:ring-teal-500"
+                  >
                     <SelectValue placeholder="Select a job type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Full-time">Full-time</SelectItem>
+                    {jobTypes.map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {type}
+                      </SelectItem>
+                    ))}
+                    {/* <SelectItem value="Full-time">Full-time</SelectItem>
                     <SelectItem value="Part-time">Part-time</SelectItem>
                     <SelectItem value="Remote">Remote</SelectItem>
                     <SelectItem value="Contract">Contract</SelectItem>
-                    <SelectItem value="Internship">Internship</SelectItem>
+                    <SelectItem value="Internship">Internship</SelectItem> */}
                   </SelectContent>
                 </Select>
                 <FormMessage className="text-sm text-red-600" />
@@ -193,13 +243,19 @@ export function JobForm({ initialData, companies }: JobFormProps) {
                 <Select
                   onValueChange={field.onChange}
                   defaultValue={field.value}
-                  className="h-12 border-slate-200 focus:border-teal-500 focus:ring-teal-500"
                 >
-                  <SelectTrigger>
+                  <SelectTrigger
+                    className="h-12 border-slate-200 focus:border-teal-500 focus:ring-teal-500"
+                  >
                     <SelectValue placeholder="Select a job category" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Design">Design</SelectItem>
+                    {jobCategories.map((categories) => (
+                      <SelectItem key={categories} value={categories}>
+                        {categories}
+                      </SelectItem>
+                    ))}
+                    {/* <SelectItem value="Design">Design</SelectItem>
                     <SelectItem value="Development">Development</SelectItem>
                     <SelectItem value="Marketing">Marketing</SelectItem>
                     <SelectItem value="Sales">Sales</SelectItem>
@@ -212,7 +268,7 @@ export function JobForm({ initialData, companies }: JobFormProps) {
                     <SelectItem value="Project Management">
                       Project Management
                     </SelectItem>
-                    <SelectItem value="Research">Research</SelectItem>
+                    <SelectItem value="Research">Research</SelectItem> */}
                   </SelectContent>
                 </Select>
                 <FormMessage className="text-sm text-red-600" />
@@ -302,9 +358,11 @@ export function JobForm({ initialData, companies }: JobFormProps) {
         />
         <Button
           type="submit"
-          className="flex-1 rounded-md bg-teal-500 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-teal-600 transition-all duration-300 w-[50%] h-12"
           disabled={form.formState.isSubmitting}
-        >{initialData ? "Update Job" : "Create Job"}</Button>
+          className="flex-1 rounded-md bg-teal-500 text-white font-medium hover:bg-teal-600 transition-colors w-full h-12"
+        >
+          {form.formState.isSubmitting ? "Submitting..." : initialData ? "Update Job" : "Create Job"}
+        </Button>
       </form>
     </Form>
   );

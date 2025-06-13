@@ -13,32 +13,21 @@ export const companySchema = z.object({
 export type companyData = z.infer<typeof companySchema>;
 
 export const jobSchema = z.object({
-  title: z.string().min(1, "Job title is required"),
-  companyId: z.number().min(1, "Select a company"),
-  location: z.string().min(1, "Location is required"),
-  salary: z.string().optional(),
-  type: z.enum(["Full-time", "Part-time", "Remote", "Contract", "Internship"], {
-    message: "Invalid job type",
-  }),
-  category: z.enum(
-    [
-      "Design",
-      "Development",
-      "Marketing",
-      "Sales",
-      "Other",
-      "Administration",
-      "Support",
-      "Production",
-      "Project Management",
-      "Research",
-    ],
-    { message: "Invalid job category" },
-  ),
-  description: z.string().min(10, "Description is too short"),
-  requirements: z.string().min(10, "Requirements are too short"),
-  benefits: z.string().min(10, "Benefits are too short"),
+  title: z.string().min(1, "Job title is required").max(256),
+  companyId: z.number().min(1, "Please select a company"),
+  location: z.string().min(1, "Location is required").max(256),
+  salary: z.string().max(100).optional(),
+  type: z.string().min(1, "Job type is required").max(50),
+  category: z.string().min(1, "Category is required").max(100),
+  description: z.string().min(1, "Description is required"),
+  requirements: z.string().min(1, "Requirements are required"),
+  benefits: z.string().min(1, "Benefits are required"),
   featured: z.boolean().default(false),
 });
 
 export type jobData = z.infer<typeof jobSchema>;
+
+// export const jobFormSchema = jobSchema.extend({
+//   requirements: z.array(z.string()),
+//   benefits: z.array(z.string()),
+// })
