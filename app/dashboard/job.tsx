@@ -2,7 +2,6 @@
 
 import { jobSchema, type jobData } from "./schema";
 import { useForm, type SubmitHandler } from "react-hook-form";
-import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createJob, updateJob } from "./actions";
 import {
@@ -24,29 +23,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import type { jobs, companies } from "@/lib/db/schema";
+import type { jobs } from "@/lib/db/schema";
 
 interface JobFormProps {
   initialData?: typeof jobs.$inferSelect & { company: string };
   companies: Array<{ id: number; name: string }>;
-}
-
-interface JobProps {
-  id: number
-  title: string
-  companyId: number
-  logo: string
-  location: string
-  salary?: string
-  type: string
-  category: string
-  description: string
-  requirements: string
-  benefits: string
-  postedAt: Date
-  featured: boolean
-  createdAt: Date
-  updatedAt: Date
 }
 
 const jobTypes = [
@@ -55,7 +36,8 @@ const jobTypes = [
   "Contract",
   "Internship",
   "Remote"
-]
+];
+
 const jobCategories = [
   "Technology",
   "Marketing",
@@ -69,26 +51,24 @@ const jobCategories = [
   "Operations",
   "Research",
   "Administration",
-]
+];
 
 export function JobForm({ initialData, companies }: JobFormProps) {
-  const router = useRouter()
-
-  const form = useForm({
+  const form = useForm<jobData>({
     resolver: zodResolver(jobSchema),
     defaultValues: {
-      title: "",
-      companyId: 0,
-      location: "",
-      salary: "",
-      type: "",
-      category: "",
-      description: "",
-      requirements: "",
-      benefits: "",
-      featured: false,
-    }
-  })
+      title: initialData?.title || "",
+      companyId: initialData?.companyId || 0,
+      location: initialData?.location || "",
+      salary: initialData?.salary || "",
+      type: initialData?.type || "",
+      category: initialData?.category || "",
+      description: initialData?.description || "",
+      requirements: initialData?.requirements || "",
+      benefits: initialData?.benefits || "",
+      featured: initialData?.featured || false,
+    },
+  });
 
   const onSubmit: SubmitHandler<jobData> = async (data) => {
     try {
@@ -98,10 +78,8 @@ export function JobForm({ initialData, companies }: JobFormProps) {
         await createJob(data);
       }
       form.reset();
-      router.refresh()
     } catch (error) {
       console.error("Form submission error:", error);
-      alert("An error occurred while submitting the form.");
     }
   };
 
@@ -138,7 +116,7 @@ export function JobForm({ initialData, companies }: JobFormProps) {
                 </FormLabel>
                 <Select
                   onValueChange={(value) => field.onChange(Number(value))}
-                  defaultValue={field.value?.toString()}
+                  value={field.value?.toString()}
                 >
                   <FormControl>
                     <SelectTrigger className="h-12 border-slate-200 focus:border-teal-500 focus:ring-teal-500">
@@ -160,6 +138,9 @@ export function JobForm({ initialData, companies }: JobFormProps) {
               </FormItem>
             )}
           />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <FormField
             control={form.control}
             name="location"
@@ -208,67 +189,19 @@ export function JobForm({ initialData, companies }: JobFormProps) {
                 </FormLabel>
                 <Select
                   onValueChange={field.onChange}
-                  defaultValue={field.value}
+                  value={field.value}
                 >
-                  <SelectTrigger
-                    className="h-12 border-slate-200 focus:border-teal-500 focus:ring-teal-500"
-                  >
-                    <SelectValue placeholder="Select a job type" />
-                  </SelectTrigger>
+                  <FormControl>
+                    <SelectTrigger className="h-12 border-slate-200 focus:border-teal-500 focus:ring-teal-500">
+                      <SelectValue placeholder="Select a job type" />
+                    </SelectTrigger>
+                  </FormControl>
                   <SelectContent>
                     {jobTypes.map((type) => (
                       <SelectItem key={type} value={type}>
                         {type}
                       </SelectItem>
                     ))}
-                    {/* <SelectItem value="Full-time">Full-time</SelectItem>
-                    <SelectItem value="Part-time">Part-time</SelectItem>
-                    <SelectItem value="Remote">Remote</SelectItem>
-                    <SelectItem value="Contract">Contract</SelectItem>
-                    <SelectItem value="Internship">Internship</SelectItem> */}
-                  </SelectContent>
-                </Select>
-                <FormMessage className="text-sm text-red-600" />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="category"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-slate-700 font-medium">
-                  Job Category <span className="text-red-600">*</span>
-                </FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <SelectTrigger
-                    className="h-12 border-slate-200 focus:border-teal-500 focus:ring-teal-500"
-                  >
-                    <SelectValue placeholder="Select a job category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {jobCategories.map((categories) => (
-                      <SelectItem key={categories} value={categories}>
-                        {categories}
-                      </SelectItem>
-                    ))}
-                    {/* <SelectItem value="Design">Design</SelectItem>
-                    <SelectItem value="Development">Development</SelectItem>
-                    <SelectItem value="Marketing">Marketing</SelectItem>
-                    <SelectItem value="Sales">Sales</SelectItem>
-                    <SelectItem value="Other">Other</SelectItem>
-                    <SelectItem value="Administration">
-                      Administration
-                    </SelectItem>
-                    <SelectItem value="Support">Support</SelectItem>
-                    <SelectItem value="Production">Production</SelectItem>
-                    <SelectItem value="Project Management">
-                      Project Management
-                    </SelectItem>
-                    <SelectItem value="Research">Research</SelectItem> */}
                   </SelectContent>
                 </Select>
                 <FormMessage className="text-sm text-red-600" />
@@ -276,6 +209,37 @@ export function JobForm({ initialData, companies }: JobFormProps) {
             )}
           />
         </div>
+
+        <FormField
+          control={form.control}
+          name="category"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-slate-700 font-medium">
+                Job Category <span className="text-red-600">*</span>
+              </FormLabel>
+              <Select
+                onValueChange={field.onChange}
+                value={field.value}
+              >
+                <FormControl>
+                  <SelectTrigger className="h-12 border-slate-200 focus:border-teal-500 focus:ring-teal-500">
+                    <SelectValue placeholder="Select a job category" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {jobCategories.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage className="text-sm text-red-600" />
+            </FormItem>
+          )}
+        />
+
         <FormField
           control={form.control}
           name="description"
@@ -296,13 +260,14 @@ export function JobForm({ initialData, companies }: JobFormProps) {
             </FormItem>
           )}
         />
+
         <FormField
           control={form.control}
           name="requirements"
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-slate-700 font-medium">
-                Requirements
+                Requirements <span className="text-red-600">*</span>
               </FormLabel>
               <FormControl>
                 <Textarea
@@ -316,13 +281,14 @@ export function JobForm({ initialData, companies }: JobFormProps) {
             </FormItem>
           )}
         />
+
         <FormField
           control={form.control}
           name="benefits"
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-slate-700 font-medium">
-                Benefits
+                Benefits <span className="text-red-600">*</span>
               </FormLabel>
               <FormControl>
                 <Textarea
@@ -336,6 +302,7 @@ export function JobForm({ initialData, companies }: JobFormProps) {
             </FormItem>
           )}
         />
+
         <FormField
           control={form.control}
           name="featured"
@@ -343,9 +310,11 @@ export function JobForm({ initialData, companies }: JobFormProps) {
             <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
               <div className="space-y-0.5">
                 <FormLabel className="text-slate-700 font-medium">
-                  Featured
+                  Featured Job
                 </FormLabel>
-                <FormMessage className="text-sm text-red-600" />
+                <p className="text-sm text-slate-500">
+                  Mark this job as featured to highlight it on the platform
+                </p>
               </div>
               <FormControl>
                 <Switch
@@ -356,12 +325,20 @@ export function JobForm({ initialData, companies }: JobFormProps) {
             </FormItem>
           )}
         />
+
         <Button
           type="submit"
           disabled={form.formState.isSubmitting}
-          className="flex-1 rounded-md bg-teal-500 text-white font-medium hover:bg-teal-600 transition-colors w-full h-12"
+          className="w-full h-12 bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white font-medium rounded-lg transition-all duration-300 hover:scale-[1.02] hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
         >
-          {form.formState.isSubmitting ? "Submitting..." : initialData ? "Update Job" : "Create Job"}
+          {form.formState.isSubmitting ? (
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              {initialData ? "Updating..." : "Creating..."}
+            </div>
+          ) : (
+            initialData ? "Update Job" : "Create Job"
+          )}
         </Button>
       </form>
     </Form>
