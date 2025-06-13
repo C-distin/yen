@@ -128,7 +128,6 @@ export function CompanyForm({ initialData }: CompanyFormProps) {
                     className="h-12 border-slate-200 focus:border-teal-500 focus:ring-teal-500"
                   />
                 </FormControl>
-                \
                 <FormMessage className="text-sm text-red-600" />
               </FormItem>
             )}
