@@ -87,7 +87,7 @@ export async function getJobs(filters?: {
       }
 
       if (conditions.length > 0) {
-        query = query.where(and(...conditions));
+        query = query.where(and(...conditions)) as typeof query;
       }
     }
 
