@@ -25,7 +25,12 @@ export default async function Page() {
   return (
     <main>
       <Dashboard 
-        jobs={jobs} 
+        jobs={jobs.map(job => ({
+          ...job,
+          featured: job.featured ?? false, // Convert null to false
+          logo: undefined, // Remove logo field
+          salary: undefined, // Remove salary field
+        }))}
         companies={transformedCompanies} 
         analytics={analytics} 
       />
