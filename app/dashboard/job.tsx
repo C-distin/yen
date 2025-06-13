@@ -54,21 +54,21 @@ const jobCategories = [
 ];
 
 export function JobForm({ initialData, companies }: JobFormProps) {
-  const form = useForm<jobData>({
+  const form = useForm({
     resolver: zodResolver(jobSchema),
     defaultValues: {
-      title: initialData?.title || "",
-      companyId: initialData?.companyId || 0,
-      location: initialData?.location || "",
-      salary: initialData?.salary || "",
-      type: initialData?.type || "",
-      category: initialData?.category || "",
-      description: initialData?.description || "",
-      requirements: initialData?.requirements || "",
-      benefits: initialData?.benefits || "",
-      featured: initialData?.featured || false,
-    },
-  });
+      title: "",
+      companyId: 0,
+      location: "",
+      salary: "",
+      type: "",
+      category: "",
+      description: "",
+      requirements: "",
+      benefits: "",
+      featured: false,
+    }
+  })
 
   const onSubmit: SubmitHandler<jobData> = async (data) => {
     try {

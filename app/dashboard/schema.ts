@@ -26,8 +26,3 @@ export const jobSchema = z.object({
 });
 
 export type jobData = z.infer<typeof jobSchema>;
-
-// export const jobFormSchema = jobSchema.extend({
-//   requirements: z.array(z.string()),
-//   benefits: z.array(z.string()),
-// })
