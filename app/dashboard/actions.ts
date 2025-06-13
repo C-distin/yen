@@ -3,7 +3,7 @@
 import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
 import { companies, jobs } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, count } from "drizzle-orm";
 
 // create company action
 export async function createCompany(data: typeof companies.$inferInsert) {
@@ -34,6 +34,14 @@ export async function deleteCompany(id: number) {
   redirect("/bashboard");
 }
 
+export async function getCompanies() {
+  return await db.select().from(companies)
+}
+
+export async function getCompanyById(id: number) {
+  return await db.select().from(companies).where(eq(companies.id, id))
+}
+
 // create job action
 export async function createJob(data: typeof jobs.$inferInsert) {
   await db.insert(jobs).values({
@@ -58,4 +66,23 @@ export async function updateJob(id: number, data: typeof jobs.$inferInsert) {
 export async function deleteJob(id: number) {
   await db.delete(jobs).where(eq(jobs.id, id));
   redirect("/bashboard");
+}
+
+export async function getJobs() {
+  return await db.select().from(jobs)
+}
+
+export async function getJobById(id: number) {
+  return await db.select().from(jobs).where(eq(jobs.id, id))
+}
+
+// analytics
+export async function getAnalytics() {
+  const [totalJobs] = await db.select({ count: count(jobs.id) }).from(jobs)
+  const [totalCompanies] = await db.select({ count: count(companies.id) }).from(companies)
+  
+  return {
+    totalJobs: totalJobs.count,
+    totalCompanies: totalCompanies.count,
+  }
 }
