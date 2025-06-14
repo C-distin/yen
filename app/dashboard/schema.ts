@@ -1,13 +1,13 @@
-import { z } from "zod/v4";
+import { z } from "zod";
 
 export const companySchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  logo: z.url({ message: "Invalid URl" }).optional(),
+  name: z.string().min(1, "Company name is required").max(256, "Name is too long"),
+  logo: z.string().url("Invalid URL").optional().or(z.literal("")),
   description: z.string().optional(),
-  founded: z.string().max(50, "Founded is too long").optional(),
+  founded: z.string().max(50, "Founded year is too long").optional(),
   location: z.string().max(256, "Location is too long").optional(),
-  employees: z.string().max(50, "Employees is too long").optional(),
-  website: z.url({ message: "Invalid URl" }).optional(),
+  employees: z.string().max(50, "Employee count is too long").optional(),
+  website: z.string().url("Invalid URL").optional().or(z.literal("")),
 });
 
 export type companyData = z.infer<typeof companySchema>;
