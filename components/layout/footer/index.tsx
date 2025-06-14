@@ -62,8 +62,13 @@ export function Footer() {
   const contactInfo: ContactInfoProps[] = [
     {
       icon: Mail,
-      text: "yendaakyejobcenter@proton.me",
-      link: "mailto:yendaakyejobcenter@proton.me",
+      text: "yendaakyejobscenter@proton.me",
+      link: "mailto:yendaakyejobscenter@proton.me",
+    },
+    {
+      icon: Phone,
+      text: "+233 50 333 6534",
+      link: "tel:+233503336534",
     },
     {
       icon: Phone,
