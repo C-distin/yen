@@ -92,7 +92,16 @@ export async function getJobs(filters?: {
     }
 
     const result = await query;
-    return result as JobWithCompany[];
+    return result.map(row => ({
+      ...row,
+      featured: row.featured ?? false,
+      company: {
+        id: row.company?.id ?? 0,
+        name: row.company?.name ?? 'Unknown Company',
+        logo: row.company?.logo ?? null,
+        location: row.company?.location ?? null,
+      }
+    })) as JobWithCompany[];
   } catch (error) {
     console.error("Error fetching jobs:", error);
     return [];
@@ -130,7 +139,16 @@ export async function getFeaturedJobs(): Promise<JobWithCompany[]> {
       .orderBy(desc(jobs.postedAt))
       .limit(6);
 
-    return result as JobWithCompany[];
+    return result.map(row => ({
+      ...row,
+      featured: row.featured ?? false,
+      company: {
+        id: row.company?.id ?? 0,
+        name: row.company?.name ?? 'Unknown Company',
+        logo: row.company?.logo ?? null,
+        location: row.company?.location ?? null,
+      }
+    })) as JobWithCompany[];
   } catch (error) {
     console.error("Error fetching featured jobs:", error);
     return [];
@@ -167,7 +185,19 @@ export async function getJobById(id: number): Promise<JobWithCompany | null> {
       .where(eq(jobs.id, id))
       .limit(1);
 
-    return result[0] as JobWithCompany || null;
+    if (result.length === 0) return null;
+
+    const row = result[0];
+    return {
+      ...row,
+      featured: row.featured ?? false,
+      company: {
+        id: row.company?.id ?? 0,
+        name: row.company?.name ?? 'Unknown Company',
+        logo: row.company?.logo ?? null,
+        location: row.company?.location ?? null,
+      }
+    } as JobWithCompany;
   } catch (error) {
     console.error("Error fetching job:", error);
     return null;
