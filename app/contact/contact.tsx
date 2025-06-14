@@ -86,6 +86,12 @@ export function Contact() {
     {
       icon: Phone,
       title: "Call Us",
+      content: "+233 50 333 6534",
+      link: "tel:+233503336534",
+    },
+    {
+      icon: Phone,
+      title: "Call Us",
       content: "+233 24 888 3460",
       link: "tel:+233248883460",
     },
