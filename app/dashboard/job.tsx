@@ -94,9 +94,15 @@ export function JobForm({ initialData, companies }: JobFormProps) {
       };
 
       if (initialData) {
-        await updateJob(initialData.id, cleanedData);
+        await updateJob(initialData.id, {
+          ...cleanedData,
+          salary: cleanedData.salary || undefined
+        });
       } else {
-        await createJob(cleanedData);
+        await createJob({
+          ...cleanedData,
+          salary: cleanedData.salary || undefined
+        });
       }
       
       setSubmitStatus("success");
