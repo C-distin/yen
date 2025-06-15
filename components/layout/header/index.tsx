@@ -94,7 +94,7 @@ export function Header() {
                 <span className="bg-gradient-to-r from-amber-500 to-amber-600 bg-clip-text text-transparent">
                   Yendaakye
                 </span>{" "}
-                <span className="bg-gradient-to-r from-teal-600 to-teal-700 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-slate-600 to-slate-700 bg-clip-text text-transparent">
                   Job Center
                 </span>
               </h1>
@@ -224,3 +224,5 @@ export function Header() {
     </motion.header>
   );
 }
+
+// export { Header }

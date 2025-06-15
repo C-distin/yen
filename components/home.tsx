@@ -19,7 +19,7 @@ import {
   ArrowRight,
   type LucideIcon,
 } from "lucide-react";
-import type { JobWithCompany } from "@/app/jobs/actions";
+import type { JobWithCompany } from "./jobs/actions";
 
 interface HomeProps {
   featuredJobs: JobWithCompany[];
@@ -174,7 +174,7 @@ export function Home({ featuredJobs, stats }: HomeProps) {
                   <Button
                     size="lg"
                     variant="outline"
-                    className="border-white text-grey-800 hover:bg-white hover:text-teal-700 font-medium px-8 py-4 rounded-xl transition-all duration-300 hover:scale-105 text-lg"
+                    className="border-white text-white hover:bg-white hover:text-teal-700 font-medium px-8 py-4 rounded-xl transition-all duration-300 hover:scale-105 text-lg"
                   >
                     Learn More
                   </Button>
