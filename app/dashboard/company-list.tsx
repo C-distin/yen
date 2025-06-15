@@ -3,6 +3,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash, Eye, Building2, Globe, Users as UsersIcon } from "lucide-react";
+import Image from "next/image"
 
 interface Company {
   id: number;
@@ -81,9 +82,19 @@ export function CompanyList({ companies }: CompanyListProps) {
               >
                 <TableCell>
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-r from-teal-500 to-teal-600 rounded-lg flex items-center justify-center">
-                      <Building2 size={16} className="text-white" />
-                    </div>
+                    {company.logo ? (
+                      <Image
+                        src={company.logo}
+                        alt={company.name}
+                        width={32}
+                        height={32}
+                        className="rounded-lg"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 bg-gradient-to-r from-teal-500 to-teal-600 rounded-lg flex items-center justify-center">
+                        <Building2 size={16} className="text-white" />
+                      </div>
+                    )}
                     <div className="space-y-1">
                       <p className="font-medium text-slate-900">{company.name}</p>
                       {company.description && (
