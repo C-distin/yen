@@ -19,7 +19,7 @@ import {
   ArrowRight,
   type LucideIcon,
 } from "lucide-react";
-import type { JobWithCompany } from "./jobs/actions";
+import type { JobWithCompany } from "@/app/jobs/actions";
 
 interface HomeProps {
   featuredJobs: JobWithCompany[];
