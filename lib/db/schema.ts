@@ -30,6 +30,17 @@ export const companies = pgTable('companies', {
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
   });
+
+  export const applications = pgTable("applications", {
+    id: serial("id").primaryKey(),
+    jobId: integer("job_id").references(() => jobs.id).notNull(),
+    name: text("name").notNull(),
+    email: text("email").notNull(),
+    phone: varchar("phone", {length: 20}),
+    resume: text("resume").notNull(),
+    coverLetter: text("cover_letter"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  });
   
   // Infer types for Drizzle (optional but good practice)
   export type Company = typeof companies.$inferSelect; // for select
@@ -37,3 +48,6 @@ export const companies = pgTable('companies', {
   
   export type Job = typeof jobs.$inferSelect; // for select
   export type NewJob = typeof jobs.$inferInsert; // for insert
+
+  export type Application = typeof applications.$inferSelect; // for select
+  export type NewApplication = typeof applications.$inferInsert; // for insert

@@ -11,6 +11,7 @@ import {
   Star,
   ExternalLink
 } from "lucide-react";
+import Link from "next/link";
 import type { JobWithCompany } from "./actions";
 
 interface JobCardProps {
@@ -104,20 +105,24 @@ export function JobCard({ job, index }: JobCardProps) {
 
         {/* Actions */}
         <div className="flex gap-3 pt-4 border-t border-slate-100">
-          <Button 
-            className="flex-1 bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white"
-            size="sm"
-          >
-            Apply Now
-            <ExternalLink size={14} className="ml-2" />
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm"
-            className="border-slate-200 hover:border-teal-300 hover:bg-teal-50"
-          >
-            View Details
-          </Button>
+          <Link href={`/jobs/${job.id}`} className="flex-1">
+            <Button 
+              className="w-full bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white"
+              size="sm"
+            >
+              Apply Now
+              <ExternalLink size={14} className="ml-2" />
+            </Button>
+          </Link>
+          <Link href={`/jobs/${job.id}`}>
+            <Button 
+              variant="outline" 
+              size="sm"
+              className="border-slate-200 hover:border-teal-300 hover:bg-teal-50"
+            >
+              View Details
+            </Button>
+          </Link>
         </div>
       </div>
     </motion.div>
