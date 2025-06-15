@@ -316,9 +316,22 @@ export function Home({ featuredJobs, stats }: HomeProps) {
                     {/* Header */}
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-gradient-to-r from-teal-500 to-teal-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                        {/* <div className="w-12 h-12 bg-gradient-to-r from-teal-500 to-teal-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                           <Building2 size={20} className="text-white" />
-                        </div>
+                        </div> */}
+                        {job.company.logo ? (
+                          <Image
+                            src={job.company.logo}
+                            alt={job.company.name}
+                            width={32}
+                            height={32}
+                            className="rounded-xl"
+                          />
+                        ) : (
+                          <div className="w-12 h-12 bg-gradient-to-r from-teal-500 to-teal-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                            <Building2 size={20} className="text-white" />
+                          </div>
+                        )}
                         <div>
                           <h3 className="font-bold text-slate-900 group-hover:text-teal-600 transition-colors">
                             {job.title}

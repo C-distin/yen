@@ -17,6 +17,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import type { JobWithCompany } from "../actions";
 
 interface JobDetailProps {
@@ -77,9 +78,22 @@ export function JobDetail({ job }: JobDetailProps) {
             {/* Job Header */}
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-white/10 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+                {/* <div className="w-16 h-16 bg-white/10 backdrop-blur-sm rounded-2xl flex items-center justify-center">
                   <Building2 size={28} className="text-white" />
-                </div>
+                </div> */}
+                {job.company.logo ? (
+                  <Image
+                    src={job.company.logo}
+                    alt={job.company.name}
+                    width={64}
+                    height={64}
+                    className="rounded-2xl"
+                  />
+                ) : (
+                  <div className="w-16 h-16 bg-gradient-to-r from-teal-500 to-teal-600 rounded-2xl flex items-center justify-center">
+                    <Building2 size={28} className="text-white" />
+                  </div>
+                )}
                 <div>
                   <h1 className="text-4xl md:text-5xl font-bold mb-2">
                     {job.title}
