@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash, Eye, Building2, Globe, Users as UsersIcon, AlertTriangle } from "lucide-react";
-import { deleteCompany } from "./actions";
+import { deleteCompany, updateCompany } from "./actions";
 import Image from "next/image";
 import {
   AlertDialog,
@@ -19,6 +19,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import type { companyData } from "./schema";
+import type { companies } from "@/lib/db/schema";
+import { init } from "next/dist/compiled/webpack/webpack";
 
 interface Company {
   id: number;
@@ -36,7 +39,11 @@ interface Company {
 
 interface CompanyListProps {
   companies: Company[];
-}
+};
+
+interface companyProps {
+  initialData?: typeof companies.$inferSelect;
+};
 
 export function CompanyList({ companies }: CompanyListProps) {
   const [isDeleting, setIsDeleting] = useState<number | null>(null);
@@ -57,9 +64,12 @@ export function CompanyList({ companies }: CompanyListProps) {
     console.log("View company:", id);
   };
 
-  const handleEdit = (id: number) => {
-    // TODO: Implement edit functionality
-    console.log("Edit company:", id);
+  const handleEdit = async (id: number, data: companyData) => {
+    try {
+      await updateCompany(id, data);
+    } catch (error) {
+      console.error("Error updating company:", error);
+    }
   };
 
   if (companies.length === 0) {
@@ -191,7 +201,7 @@ export function CompanyList({ companies }: CompanyListProps) {
                     <Button 
                       variant="ghost" 
                       size="icon"
-                      onClick={() => handleEdit(company.id)}
+                      onClick={() => handleEdit(company.id, companies.entries)}
                       className="h-8 w-8 hover:bg-green-50 hover:text-green-600"
                       title="Edit Company"
                     >
