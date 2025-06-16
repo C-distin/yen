@@ -1,8 +1,23 @@
+"use client";
+
+import { useState } from "react";
 import { motion } from "motion/react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash, Eye, Calendar } from "lucide-react";
+import { Edit, Trash, Eye, Calendar, AlertTriangle } from "lucide-react";
+import { deleteJob } from "./actions";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface Job {
   id: number;
@@ -25,6 +40,8 @@ interface JobListProps {
 }
 
 export function JobList({ jobs }: JobListProps) {
+  const [isDeleting, setIsDeleting] = useState<number | null>(null);
+
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat('en-US', {
       year: 'numeric',
@@ -42,6 +59,26 @@ export function JobList({ jobs }: JobListProps) {
       'Remote': 'bg-teal-100 text-teal-800'
     };
     return colors[type] || 'bg-gray-100 text-gray-800';
+  };
+
+  const handleDelete = async (id: number) => {
+    setIsDeleting(id);
+    try {
+      await deleteJob(id);
+    } catch (error) {
+      console.error("Error deleting job:", error);
+    } finally {
+      setIsDeleting(null);
+    }
+  };
+
+  const handleView = (id: number) => {
+    window.open(`/jobs/${id}`, '_blank');
+  };
+
+  const handleEdit = (id: number) => {
+    // TODO: Implement edit functionality
+    console.log("Edit job:", id);
   };
 
   if (jobs.length === 0) {
@@ -135,24 +172,58 @@ export function JobList({ jobs }: JobListProps) {
                     <Button 
                       variant="ghost" 
                       size="icon"
+                      onClick={() => handleView(job.id)}
                       className="h-8 w-8 hover:bg-blue-50 hover:text-blue-600"
+                      title="View Job"
                     >
                       <Eye size={16} />
                     </Button>
                     <Button 
                       variant="ghost" 
                       size="icon"
+                      onClick={() => handleEdit(job.id)}
                       className="h-8 w-8 hover:bg-green-50 hover:text-green-600"
+                      title="Edit Job"
                     >
                       <Edit size={16} />
                     </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="icon"
-                      className="h-8 w-8 hover:bg-red-50 hover:text-red-600"
-                    >
-                      <Trash size={16} />
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="icon"
+                          className="h-8 w-8 hover:bg-red-50 hover:text-red-600"
+                          title="Delete Job"
+                          disabled={isDeleting === job.id}
+                        >
+                          {isDeleting === job.id ? (
+                            <div className="w-4 h-4 border-2 border-red-600/30 border-t-red-600 rounded-full animate-spin" />
+                          ) : (
+                            <Trash size={16} />
+                          )}
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle className="flex items-center gap-2">
+                            <AlertTriangle size={20} className="text-red-600" />
+                            Delete Job Posting
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete "{job.title}"? This action cannot be undone and will permanently remove the job posting and all associated applications.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDelete(job.id)}
+                            className="bg-red-600 hover:bg-red-700"
+                          >
+                            Delete Job
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </TableCell>
               </motion.tr>

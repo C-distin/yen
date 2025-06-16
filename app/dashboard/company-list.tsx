@@ -1,9 +1,24 @@
+"use client";
+
+import { useState } from "react";
 import { motion } from "motion/react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash, Eye, Building2, Globe, Users as UsersIcon } from "lucide-react";
-import Image from "next/image"
+import { Edit, Trash, Eye, Building2, Globe, Users as UsersIcon, AlertTriangle } from "lucide-react";
+import { deleteCompany } from "./actions";
+import Image from "next/image";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface Company {
   id: number;
@@ -24,6 +39,29 @@ interface CompanyListProps {
 }
 
 export function CompanyList({ companies }: CompanyListProps) {
+  const [isDeleting, setIsDeleting] = useState<number | null>(null);
+
+  const handleDelete = async (id: number) => {
+    setIsDeleting(id);
+    try {
+      await deleteCompany(id);
+    } catch (error) {
+      console.error("Error deleting company:", error);
+    } finally {
+      setIsDeleting(null);
+    }
+  };
+
+  const handleView = (id: number) => {
+    // TODO: Implement view company details
+    console.log("View company:", id);
+  };
+
+  const handleEdit = (id: number) => {
+    // TODO: Implement edit functionality
+    console.log("Edit company:", id);
+  };
+
   if (companies.length === 0) {
     return (
       <motion.div
@@ -86,8 +124,8 @@ export function CompanyList({ companies }: CompanyListProps) {
                       <Image
                         src={company.logo}
                         alt={company.name}
-                        width={32}
-                        height={32}
+                        width={40}
+                        height={40}
                         className="rounded-lg"
                       />
                     ) : (
@@ -144,24 +182,58 @@ export function CompanyList({ companies }: CompanyListProps) {
                     <Button 
                       variant="ghost" 
                       size="icon"
+                      onClick={() => handleView(company.id)}
                       className="h-8 w-8 hover:bg-blue-50 hover:text-blue-600"
+                      title="View Company"
                     >
                       <Eye size={16} />
                     </Button>
                     <Button 
                       variant="ghost" 
                       size="icon"
+                      onClick={() => handleEdit(company.id)}
                       className="h-8 w-8 hover:bg-green-50 hover:text-green-600"
+                      title="Edit Company"
                     >
                       <Edit size={16} />
                     </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="icon"
-                      className="h-8 w-8 hover:bg-red-50 hover:text-red-600"
-                    >
-                      <Trash size={16} />
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="icon"
+                          className="h-8 w-8 hover:bg-red-50 hover:text-red-600"
+                          title="Delete Company"
+                          disabled={isDeleting === company.id}
+                        >
+                          {isDeleting === company.id ? (
+                            <div className="w-4 h-4 border-2 border-red-600/30 border-t-red-600 rounded-full animate-spin" />
+                          ) : (
+                            <Trash size={16} />
+                          )}
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle className="flex items-center gap-2">
+                            <AlertTriangle size={20} className="text-red-600" />
+                            Delete Company
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete "{company.name}"? This action cannot be undone and will permanently remove the company and all associated job postings.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDelete(company.id)}
+                            className="bg-red-600 hover:bg-red-700"
+                          >
+                            Delete Company
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </TableCell>
               </motion.tr>
