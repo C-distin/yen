@@ -6,21 +6,64 @@ import { companies, jobs } from "@/lib/db/schema";
 import { eq, count, desc } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
+// Helper function to handle file upload (placeholder for now)
+async function uploadFile(file: File): Promise<string> {
+  // In a real application, you would upload to a cloud storage service like:
+  // - AWS S3
+  // - Cloudinary
+  // - Vercel Blob
+  // - Supabase Storage
+  
+  // For now, we'll create a placeholder URL
+  // You should replace this with actual file upload logic
+  const fileName = `${Date.now()}-${file.name}`;
+  const uploadUrl = `/uploads/${fileName}`;
+  
+  // TODO: Implement actual file upload logic here
+  // Example with Cloudinary:
+  // const formData = new FormData();
+  // formData.append('file', file);
+  // formData.append('upload_preset', 'your_preset');
+  // const response = await fetch('https://api.cloudinary.com/v1_1/your_cloud/image/upload', {
+  //   method: 'POST',
+  //   body: formData
+  // });
+  // const data = await response.json();
+  // return data.secure_url;
+  
+  return uploadUrl;
+}
+
 // create company action
 export async function createCompany(data: {
   name: string;
-  logo?: string | null;
+  logo?: File | null;
   description?: string | null;
   founded?: string | null;
   location?: string | null;
   employees?: string | null;
   website?: string | null;
+  email?: string | null;
 }) {
   try {
+    let logoUrl: string | null = null;
+    
+    // Handle file upload if logo is provided
+    if (data.logo && data.logo instanceof File) {
+      logoUrl = await uploadFile(data.logo);
+    }
+    
     await db
       .insert(companies)
       .values({ 
-        ...data, 
+        name: data.name,
+        logo: logoUrl,
+        description: data.description,
+        founded: data.founded,
+        location: data.location,
+        employees: data.employees,
+        website: data.website,
+        email: data.email,
         createdAt: new Date(), 
         updatedAt: new Date() 
       });
@@ -40,18 +83,42 @@ export async function updateCompany(
   id: number,
   data: {
     name: string;
-    logo?: string | null;
+    logo?: File | null;
     description?: string | null;
     founded?: string | null;
     location?: string | null;
     employees?: string | null;
     website?: string | null;
+    email?: string | null;
   }
 ) {
   try {
+    let logoUrl: string | null = null;
+    
+    // Handle file upload if logo is provided
+    if (data.logo && data.logo instanceof File) {
+      logoUrl = await uploadFile(data.logo);
+    }
+    
+    const updateData: any = {
+      name: data.name,
+      description: data.description,
+      founded: data.founded,
+      location: data.location,
+      employees: data.employees,
+      website: data.website,
+      email: data.email,
+      updatedAt: new Date()
+    };
+    
+    // Only update logo if a new file was provided
+    if (logoUrl) {
+      updateData.logo = logoUrl;
+    }
+    
     await db
       .update(companies)
-      .set({ ...data, updatedAt: new Date() })
+      .set(updateData)
       .where(eq(companies.id, id));
     
     revalidatePath("/dashboard");

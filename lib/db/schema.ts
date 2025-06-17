@@ -9,6 +9,7 @@ export const companies = pgTable('companies', {
     location: varchar('location', { length: 256 }),
     employees: varchar('employees', { length: 50 }), // Adjusted length
     website: varchar('website', { length: 512 }),
+    email: varchar('email', { length: 256 }), // Added email field
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
   });

@@ -2,12 +2,19 @@ import { z } from "zod";
 
 export const companySchema = z.object({
   name: z.string().min(1, "Company name is required").max(256, "Name is too long"),
-  logo: z.string().url("Invalid URL").optional().or(z.literal("")),
+  logo: z.instanceof(File)
+    .refine(file => file.size <= 1024 * 1024 * 5, "Logo must be less than 5MB")
+    .refine(
+      file => ["image/jpeg", "image/jpg", "image/png"].includes(file.type),
+      "Logo must be a JPG or PNG image"
+    )
+    .optional(),
   description: z.string().optional(),
   founded: z.string().max(50, "Founded year is too long").optional(),
   location: z.string().max(256, "Location is too long").optional(),
   employees: z.string().max(50, "Employee count is too long").optional(),
   website: z.string().url("Invalid URL").optional().or(z.literal("")),
+  email: z.string().email("Invalid email address").optional().or(z.literal("")),
 });
 
 export type companyData = z.infer<typeof companySchema>;
