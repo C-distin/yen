@@ -1,5 +1,5 @@
 import { Home } from "./home";
-import { getFeaturedJobs } from "./jobs/actions";
+import { getFeaturedJobs } from "./dashboard/actions";
 import { getAnalytics } from "./dashboard/actions";
 
 export const metadata = {

@@ -3,7 +3,7 @@
 import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
 import { companies, jobs } from "@/lib/db/schema";
-import { eq, count } from "drizzle-orm";
+import { eq, count, desc } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 // create company action
@@ -26,6 +26,8 @@ export async function createCompany(data: {
       });
     
     revalidatePath("/dashboard");
+    revalidatePath("/jobs");
+    revalidatePath("/");
     return { success: true };
   } catch (error) {
     console.error("Error creating company:", error);
@@ -53,6 +55,8 @@ export async function updateCompany(
       .where(eq(companies.id, id));
     
     revalidatePath("/dashboard");
+    revalidatePath("/jobs");
+    revalidatePath("/");
     return { success: true };
   } catch (error) {
     console.error("Error updating company:", error);
@@ -69,6 +73,8 @@ export async function deleteCompany(id: number) {
     });
     
     revalidatePath("/dashboard");
+    revalidatePath("/jobs");
+    revalidatePath("/");
     return { success: true };
   } catch (error) {
     console.error("Error deleting company:", error);
@@ -169,6 +175,7 @@ export async function deleteJob(id: number) {
   }
 }
 
+// Updated getJobs function to include company information
 export async function getJobs() {
   try {
     const result = await db
@@ -187,12 +194,77 @@ export async function getJobs() {
         postedAt: jobs.postedAt,
         createdAt: jobs.createdAt,
         updatedAt: jobs.updatedAt,
+        company: {
+          id: companies.id,
+          name: companies.name,
+          logo: companies.logo,
+          location: companies.location,
+        },
       })
-      .from(jobs);
-    
-    return result;
+      .from(jobs)
+      .leftJoin(companies, eq(jobs.companyId, companies.id))
+      .orderBy(desc(jobs.featured), desc(jobs.postedAt));
+
+    return result.map(row => ({
+      ...row,
+      featured: row.featured ?? false,
+      company: {
+        id: row.company?.id ?? 0,
+        name: row.company?.name ?? 'Unknown Company',
+        logo: row.company?.logo ?? null,
+        location: row.company?.location ?? null,
+      }
+    }));
   } catch (error) {
     console.error("Error fetching jobs:", error);
+    return [];
+  }
+}
+
+// Updated getFeaturedJobs function
+export async function getFeaturedJobs() {
+  try {
+    const result = await db
+      .select({
+        id: jobs.id,
+        title: jobs.title,
+        companyId: jobs.companyId,
+        location: jobs.location,
+        salary: jobs.salary,
+        type: jobs.type,
+        category: jobs.category,
+        description: jobs.description,
+        requirements: jobs.requirements,
+        benefits: jobs.benefits,
+        featured: jobs.featured,
+        postedAt: jobs.postedAt,
+        createdAt: jobs.createdAt,
+        updatedAt: jobs.updatedAt,
+        company: {
+          id: companies.id,
+          name: companies.name,
+          logo: companies.logo,
+          location: companies.location,
+        },
+      })
+      .from(jobs)
+      .leftJoin(companies, eq(jobs.companyId, companies.id))
+      .where(eq(jobs.featured, true))
+      .orderBy(desc(jobs.postedAt))
+      .limit(6);
+
+    return result.map(row => ({
+      ...row,
+      featured: row.featured ?? false,
+      company: {
+        id: row.company?.id ?? 0,
+        name: row.company?.name ?? 'Unknown Company',
+        logo: row.company?.logo ?? null,
+        location: row.company?.location ?? null,
+      }
+    }));
+  } catch (error) {
+    console.error("Error fetching featured jobs:", error);
     return [];
   }
 }
