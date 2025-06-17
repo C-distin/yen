@@ -116,6 +116,8 @@ export async function createJob(data: {
     });
     
     revalidatePath("/dashboard");
+    revalidatePath("/jobs");
+    revalidatePath("/");
     return { success: true };
   } catch (error) {
     console.error("Error creating job:", error);
@@ -143,6 +145,8 @@ export async function updateJob(id: number, data: {
       .where(eq(jobs.id, id));
     
     revalidatePath("/dashboard");
+    revalidatePath("/jobs");
+    revalidatePath("/");
     return { success: true };
   } catch (error) {
     console.error("Error updating job:", error);
@@ -156,6 +160,8 @@ export async function deleteJob(id: number) {
     await db.delete(jobs).where(eq(jobs.id, id));
     
     revalidatePath("/dashboard");
+    revalidatePath("/jobs");
+    revalidatePath("/");
     return { success: true };
   } catch (error) {
     console.error("Error deleting job:", error);
@@ -165,7 +171,26 @@ export async function deleteJob(id: number) {
 
 export async function getJobs() {
   try {
-    return await db.select().from(jobs);
+    const result = await db
+      .select({
+        id: jobs.id,
+        title: jobs.title,
+        companyId: jobs.companyId,
+        location: jobs.location,
+        salary: jobs.salary,
+        type: jobs.type,
+        category: jobs.category,
+        description: jobs.description,
+        requirements: jobs.requirements,
+        benefits: jobs.benefits,
+        featured: jobs.featured,
+        postedAt: jobs.postedAt,
+        createdAt: jobs.createdAt,
+        updatedAt: jobs.updatedAt,
+      })
+      .from(jobs);
+    
+    return result;
   } catch (error) {
     console.error("Error fetching jobs:", error);
     return [];
