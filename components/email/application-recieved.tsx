@@ -12,7 +12,15 @@ import {
   Tailwind,
 } from '@react-email/components';
 
-export const ApplicationConfirmationEmail = (props) => {
+interface ApplicationConfirmationEmailProps {
+  fullName: string;
+  email: string;
+  phoneNumber: string;
+  cvFileName: string;
+  coverLetterPreview: string;
+}
+
+export const ApplicationConfirmationEmail: React.FC<ApplicationConfirmationEmailProps> = (props) => {
   const { fullName, email, phoneNumber, cvFileName, coverLetterPreview } = props;
 
   return (

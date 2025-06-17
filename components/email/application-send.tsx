@@ -13,7 +13,17 @@ import {
   Button,
 } from '@react-email/components';
 
-export const NewApplicationNotificationEmail = (props) => {
+interface NewApplicationNotificationEmailProps {
+  fullName: string;
+  email: string;
+  phoneNumber: string;
+  cvFileName: string;
+  coverLetter: string;
+  positionApplied: string;
+  applicationDate: string;
+}
+
+export const NewApplicationNotificationEmail: React.FC<NewApplicationNotificationEmailProps> = (props) => {
   const { fullName, email, phoneNumber, cvFileName, coverLetter, positionApplied, applicationDate } = props;
 
   return (
