@@ -212,7 +212,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-For support, email yendaakyejobscenter@proton.me or create an issue on GitHub.
+For support, email [yendaakyejobscenter@proton.me] or create an issue on GitHub.
 
 ---
 
