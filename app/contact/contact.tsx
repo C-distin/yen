@@ -90,12 +90,6 @@ export function Contact() {
       link: "tel:+233503336534",
     },
     {
-      icon: Phone,
-      title: "Call Us",
-      content: "+233 24 888 3460",
-      link: "tel:+233248883460",
-    },
-    {
       icon: MapPin,
       title: "Visit Us",
       content: "House No. C/403 Alhaji Sulley Road, Abelemkpe, Accra",
