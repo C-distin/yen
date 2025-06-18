@@ -5,8 +5,9 @@ import { motion } from "motion/react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash, Eye, Calendar, AlertTriangle } from "lucide-react";
-import { deleteJob } from "./actions";
+import { Edit, Trash, Eye, Calendar, AlertTriangle, Users } from "lucide-react";
+import { deleteJob, getApplicationsByJobId, type ApplicationWithJob } from "./actions";
+import { JobApplications } from "./job-applications";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -41,6 +42,12 @@ interface JobListProps {
 
 export function JobList({ jobs }: JobListProps) {
   const [isDeleting, setIsDeleting] = useState<number | null>(null);
+  const [selectedJobApplications, setSelectedJobApplications] = useState<{
+    jobId: number;
+    jobTitle: string;
+    applications: ApplicationWithJob[];
+  } | null>(null);
+  const [loadingApplications, setLoadingApplications] = useState<number | null>(null);
 
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat('en-US', {
@@ -72,6 +79,22 @@ export function JobList({ jobs }: JobListProps) {
     }
   };
 
+  const handleViewApplications = async (jobId: number, jobTitle: string) => {
+    setLoadingApplications(jobId);
+    try {
+      const applications = await getApplicationsByJobId(jobId);
+      setSelectedJobApplications({
+        jobId,
+        jobTitle,
+        applications,
+      });
+    } catch (error) {
+      console.error("Error fetching applications:", error);
+    } finally {
+      setLoadingApplications(null);
+    }
+  };
+
   const handleView = (id: number) => {
     window.open(`/jobs/${id}`, '_blank');
   };
@@ -80,6 +103,18 @@ export function JobList({ jobs }: JobListProps) {
     // TODO: Implement edit functionality
     console.log("Edit job:", id);
   };
+
+  // If viewing applications for a specific job
+  if (selectedJobApplications) {
+    return (
+      <JobApplications
+        jobId={selectedJobApplications.jobId}
+        jobTitle={selectedJobApplications.jobTitle}
+        applications={selectedJobApplications.applications}
+        onBack={() => setSelectedJobApplications(null)}
+      />
+    );
+  }
 
   if (jobs.length === 0) {
     return (
@@ -169,6 +204,20 @@ export function JobList({ jobs }: JobListProps) {
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-2">
+                    <Button 
+                      variant="ghost" 
+                      size="icon"
+                      onClick={() => handleViewApplications(job.id, job.title)}
+                      disabled={loadingApplications === job.id}
+                      className="h-8 w-8 hover:bg-purple-50 hover:text-purple-600"
+                      title="View Applications"
+                    >
+                      {loadingApplications === job.id ? (
+                        <div className="w-4 h-4 border-2 border-purple-600/30 border-t-purple-600 rounded-full animate-spin" />
+                      ) : (
+                        <Users size={16} />
+                      )}
+                    </Button>
                     <Button 
                       variant="ghost" 
                       size="icon"

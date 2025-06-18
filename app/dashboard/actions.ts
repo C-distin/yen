@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
-import { companies, jobs } from "@/lib/db/schema";
+import { companies, jobs, applications } from "@/lib/db/schema";
 import { eq, count, desc } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
@@ -345,21 +345,152 @@ export async function getJobById(id: number) {
   }
 }
 
+// Application types
+export interface ApplicationWithJob {
+  id: number;
+  jobId: number;
+  name: string;
+  email: string;
+  phone: string | null;
+  resume: string;
+  coverLetter: string | null;
+  createdAt: Date;
+  job?: {
+    id: number;
+    title: string;
+    company?: {
+      id: number;
+      name: string;
+      logo: string | null;
+    };
+  };
+}
+
+// Get all applications with job and company information
+export async function getApplications(): Promise<ApplicationWithJob[]> {
+  try {
+    const result = await db
+      .select({
+        id: applications.id,
+        jobId: applications.jobId,
+        name: applications.name,
+        email: applications.email,
+        phone: applications.phone,
+        resume: applications.resume,
+        coverLetter: applications.coverLetter,
+        createdAt: applications.createdAt,
+        job: {
+          id: jobs.id,
+          title: jobs.title,
+          company: {
+            id: companies.id,
+            name: companies.name,
+            logo: companies.logo,
+          },
+        },
+      })
+      .from(applications)
+      .leftJoin(jobs, eq(applications.jobId, jobs.id))
+      .leftJoin(companies, eq(jobs.companyId, companies.id))
+      .orderBy(desc(applications.createdAt));
+
+    return result.map(row => ({
+      id: row.id,
+      jobId: row.jobId,
+      name: row.name,
+      email: row.email,
+      phone: row.phone,
+      resume: row.resume,
+      coverLetter: row.coverLetter,
+      createdAt: row.createdAt,
+      job: row.job ? {
+        id: row.job.id,
+        title: row.job.title,
+        company: row.job.company ? {
+          id: row.job.company.id,
+          name: row.job.company.name,
+          logo: row.job.company.logo,
+        } : undefined,
+      } : undefined,
+    }));
+  } catch (error) {
+    console.error("Error fetching applications:", error);
+    return [];
+  }
+}
+
+// Get applications for a specific job
+export async function getApplicationsByJobId(jobId: number): Promise<ApplicationWithJob[]> {
+  try {
+    const result = await db
+      .select({
+        id: applications.id,
+        jobId: applications.jobId,
+        name: applications.name,
+        email: applications.email,
+        phone: applications.phone,
+        resume: applications.resume,
+        coverLetter: applications.coverLetter,
+        createdAt: applications.createdAt,
+        job: {
+          id: jobs.id,
+          title: jobs.title,
+          company: {
+            id: companies.id,
+            name: companies.name,
+            logo: companies.logo,
+          },
+        },
+      })
+      .from(applications)
+      .leftJoin(jobs, eq(applications.jobId, jobs.id))
+      .leftJoin(companies, eq(jobs.companyId, companies.id))
+      .where(eq(applications.jobId, jobId))
+      .orderBy(desc(applications.createdAt));
+
+    return result.map(row => ({
+      id: row.id,
+      jobId: row.jobId,
+      name: row.name,
+      email: row.email,
+      phone: row.phone,
+      resume: row.resume,
+      coverLetter: row.coverLetter,
+      createdAt: row.createdAt,
+      job: row.job ? {
+        id: row.job.id,
+        title: row.job.title,
+        company: row.job.company ? {
+          id: row.job.company.id,
+          name: row.job.company.name,
+          logo: row.job.company.logo,
+        } : undefined,
+      } : undefined,
+    }));
+  } catch (error) {
+    console.error("Error fetching applications for job:", error);
+    return [];
+  }
+}
+
 // analytics
 export async function getAnalytics() {
   try {
     const [totalJobs] = await db.select({ count: count(jobs.id) }).from(jobs);
     const [totalCompanies] = await db.select({ count: count(companies.id) }).from(companies);
+    const [totalApplications] = await db.select({ count: count(applications.id) }).from(applications);
     
     return {
       totalJobs: totalJobs.count,
       totalCompanies: totalCompanies.count,
+      totalApplications: totalApplications.count,
     };
   } catch (error) {
     console.error("Error fetching analytics:", error);
     return {
       totalJobs: 0,
       totalCompanies: 0,
+      totalApplications: 0,
     };
   }
 }
