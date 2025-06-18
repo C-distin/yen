@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { applications } from "@/lib/db/schema";
 import { applicationSchema, type applicationData } from "./schema";
 import { revalidatePath } from "next/cache";
+import { uploadFile } from "@/lib/supabase";
 
 export async function submitApplication(jobId: number, data: applicationData) {
   try {
@@ -13,16 +14,25 @@ export async function submitApplication(jobId: number, data: applicationData) {
       return { success: false, error: result.error.format() };
     }
 
-    // In a real application, you would upload the resume file to a storage service
-    // For now, we'll store a placeholder URL
-    const resumeUrl = "placeholder-resume-url"; // This should be replaced with actual file upload logic
+    // Upload resume to Supabase Storage
+    const timestamp = Date.now();
+    const fileName = `${timestamp}-${result.data.resume.name}`;
+    const filePath = `resumes/${fileName}`;
+    
+    const uploadResult = await uploadFile(result.data.resume, 'job-applications', filePath);
+    
+    if (uploadResult.error) {
+      console.error("Error uploading resume:", uploadResult.error);
+      return { success: false, error: "Failed to upload resume" };
+    }
 
+    // Save application to database with resume URL
     await db.insert(applications).values({
       jobId,
       name: result.data.name,
       email: result.data.email,
       phone: result.data.phone || null,
-      resume: resumeUrl,
+      resume: uploadResult.publicUrl!,
       coverLetter: result.data.coverLetter || null,
       createdAt: new Date(),
     });

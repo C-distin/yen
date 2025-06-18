@@ -15,6 +15,8 @@ import {
   Clock,
   CheckCircle,
   ArrowLeft,
+  Share2,
+  Bookmark,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -78,9 +80,6 @@ export function JobDetail({ job }: JobDetailProps) {
             {/* Job Header */}
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-4">
-                {/* <div className="w-16 h-16 bg-white/10 backdrop-blur-sm rounded-2xl flex items-center justify-center">
-                  <Building2 size={28} className="text-white" />
-                </div> */}
                 {job.company.logo ? (
                   <Image
                     src={job.company.logo}
@@ -102,12 +101,32 @@ export function JobDetail({ job }: JobDetailProps) {
                 </div>
               </div>
 
-              {job.featured && (
-                <div className="flex items-center gap-2 bg-amber-400 text-slate-900 px-4 py-2 rounded-full font-medium">
-                  <Star size={16} className="fill-current" />
-                  Featured
+              <div className="flex items-center gap-3">
+                {job.featured && (
+                  <div className="flex items-center gap-2 bg-amber-400 text-slate-900 px-4 py-2 rounded-full font-medium">
+                    <Star size={16} className="fill-current" />
+                    Featured
+                  </div>
+                )}
+                
+                {/* Action Buttons */}
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="border-white text-white hover:bg-white hover:text-teal-700"
+                  >
+                    <Share2 size={16} />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="border-white text-white hover:bg-white hover:text-teal-700"
+                  >
+                    <Bookmark size={16} />
+                  </Button>
                 </div>
-              )}
+              </div>
             </div>
 
             {/* Job Meta */}
@@ -197,19 +216,47 @@ export function JobDetail({ job }: JobDetailProps) {
 
             {/* Sidebar */}
             <div className="space-y-8">
-              {/* Company Info */}
+              {/* Apply Button */}
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.5 }}
                 className="bg-white rounded-2xl p-6 shadow-lg border border-slate-100"
               >
+                <h3 className="text-xl font-bold text-slate-900 mb-4">Ready to Apply?</h3>
+                <p className="text-slate-600 mb-6">
+                  Submit your application and we'll get back to you within 48 hours.
+                </p>
+                <ApplicationForm 
+                  jobId={job.id} 
+                  jobTitle={job.title} 
+                  companyName={job.company.name} 
+                />
+              </motion.div>
+
+              {/* Company Info */}
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.6 }}
+                className="bg-white rounded-2xl p-6 shadow-lg border border-slate-100"
+              >
                 <h3 className="text-xl font-bold text-slate-900 mb-4">About the Company</h3>
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gradient-to-r from-teal-500 to-teal-600 rounded-xl flex items-center justify-center">
-                      <Building2 size={20} className="text-white" />
-                    </div>
+                    {job.company.logo ? (
+                      <Image
+                        src={job.company.logo}
+                        alt={job.company.name}
+                        width={48}
+                        height={48}
+                        className="rounded-xl"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 bg-gradient-to-r from-teal-500 to-teal-600 rounded-xl flex items-center justify-center">
+                        <Building2 size={20} className="text-white" />
+                      </div>
+                    )}
                     <div>
                       <h4 className="font-semibold text-slate-900">{job.company.name}</h4>
                       <p className="text-sm text-slate-600">{job.company.location}</p>
@@ -233,7 +280,7 @@ export function JobDetail({ job }: JobDetailProps) {
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.6 }}
+                transition={{ duration: 0.8, delay: 0.7 }}
                 className="bg-white rounded-2xl p-6 shadow-lg border border-slate-100"
               >
                 <h3 className="text-xl font-bold text-slate-900 mb-4">Job Details</h3>
@@ -254,13 +301,6 @@ export function JobDetail({ job }: JobDetailProps) {
                   </div>
                 </div>
               </motion.div>
-
-              {/* Application Form */}
-              <ApplicationForm 
-                jobId={job.id} 
-                jobTitle={job.title} 
-                companyName={job.company.name} 
-              />
             </div>
           </div>
         </div>

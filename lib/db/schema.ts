@@ -38,7 +38,7 @@ export const companies = pgTable('companies', {
     name: text("name").notNull(),
     email: text("email").notNull(),
     phone: varchar("phone", {length: 20}),
-    resume: text("resume").notNull(),
+    resume: text("resume").notNull(), // Now stores Supabase Storage URL
     coverLetter: text("cover_letter"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   });
