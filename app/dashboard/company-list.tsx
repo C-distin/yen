@@ -5,8 +5,9 @@ import { motion } from "motion/react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash, Eye, Building2, Globe, Users as UsersIcon, AlertTriangle } from "lucide-react";
-import { deleteCompany, updateCompany } from "./actions";
+import { Edit, Trash, Eye, Building2, Globe, Users as UsersIcon, AlertTriangle, Mail, MapPin, Calendar } from "lucide-react";
+import { deleteCompany } from "./actions";
+import { CompanyForm } from "./company";
 import Image from "next/image";
 import {
   AlertDialog,
@@ -19,9 +20,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import type { companyData } from "./schema";
-import type { companies } from "@/lib/db/schema";
-import { init } from "next/dist/compiled/webpack/webpack";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 interface Company {
   id: number;
@@ -33,20 +39,27 @@ interface Company {
   founded: string | null;
   employees: string | null;
   website: string | null;
+  email: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
 
 interface CompanyListProps {
   companies: Company[];
-};
-
-interface companyProps {
-  initialData?: typeof companies.$inferSelect;
-};
+}
 
 export function CompanyList({ companies }: CompanyListProps) {
   const [isDeleting, setIsDeleting] = useState<number | null>(null);
+  const [viewingCompany, setViewingCompany] = useState<Company | null>(null);
+  const [editingCompany, setEditingCompany] = useState<Company | null>(null);
+
+  const formatDate = (date: Date) => {
+    return new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    }).format(new Date(date));
+  };
 
   const handleDelete = async (id: number) => {
     setIsDeleting(id);
@@ -59,17 +72,12 @@ export function CompanyList({ companies }: CompanyListProps) {
     }
   };
 
-  const handleView = (id: number) => {
-    // TODO: Implement view company details
-    console.log("View company:", id);
+  const handleView = (company: Company) => {
+    setViewingCompany(company);
   };
 
-  const handleEdit = async (id: number, data: companyData) => {
-    try {
-      await updateCompany(id, data);
-    } catch (error) {
-      console.error("Error updating company:", error);
-    }
+  const handleEdit = (company: Company) => {
+    setEditingCompany(company);
   };
 
   if (companies.length === 0) {
@@ -114,8 +122,8 @@ export function CompanyList({ companies }: CompanyListProps) {
               <TableHead className="font-semibold text-slate-700">Location</TableHead>
               <TableHead className="font-semibold text-slate-700">Founded</TableHead>
               <TableHead className="font-semibold text-slate-700">Employees</TableHead>
-              <TableHead className="font-semibold text-slate-700">Website</TableHead>
-              <TableHead className="font-semibold text-slate-700">Status</TableHead>
+              <TableHead className="font-semibold text-slate-700">Contact</TableHead>
+              <TableHead className="font-semibold text-slate-700">Created</TableHead>
               <TableHead className="font-semibold text-slate-700 text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -136,7 +144,7 @@ export function CompanyList({ companies }: CompanyListProps) {
                         alt={company.name}
                         width={40}
                         height={40}
-                        className="rounded-lg"
+                        className="rounded-lg object-cover"
                       />
                     ) : (
                       <div className="w-10 h-10 bg-gradient-to-r from-teal-500 to-teal-600 rounded-lg flex items-center justify-center">
@@ -146,7 +154,7 @@ export function CompanyList({ companies }: CompanyListProps) {
                     <div className="space-y-1">
                       <p className="font-medium text-slate-900">{company.name}</p>
                       {company.description && (
-                        <p className="text-sm text-slate-500 line-clamp-1">
+                        <p className="text-sm text-slate-500 line-clamp-1 max-w-[200px]">
                           {company.description.substring(0, 50)}...
                         </p>
                       )}
@@ -154,7 +162,10 @@ export function CompanyList({ companies }: CompanyListProps) {
                   </div>
                 </TableCell>
                 <TableCell>
-                  <span className="text-slate-700">{company.location || "Not specified"}</span>
+                  <div className="flex items-center gap-2">
+                    <MapPin size={14} className="text-slate-400" />
+                    <span className="text-slate-700">{company.location || "Not specified"}</span>
+                  </div>
                 </TableCell>
                 <TableCell>
                   <span className="text-slate-700">{company.founded || "N/A"}</span>
@@ -166,47 +177,150 @@ export function CompanyList({ companies }: CompanyListProps) {
                   </div>
                 </TableCell>
                 <TableCell>
-                  {company.website ? (
-                    <div className="flex items-center gap-2">
-                      <Globe size={14} className="text-slate-400" />
-                      <a 
-                        href={company.website} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-teal-600 hover:text-teal-700 text-sm"
-                      >
-                        Visit
-                      </a>
-                    </div>
-                  ) : (
-                    <span className="text-slate-500">No website</span>
-                  )}
+                  <div className="space-y-1">
+                    {company.email && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <Mail size={12} className="text-slate-400" />
+                        <span className="text-slate-600">{company.email}</span>
+                      </div>
+                    )}
+                    {company.website && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <Globe size={12} className="text-slate-400" />
+                        <a 
+                          href={company.website} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-teal-600 hover:text-teal-700"
+                        >
+                          Website
+                        </a>
+                      </div>
+                    )}
+                  </div>
                 </TableCell>
                 <TableCell>
-                  <Badge className={company.featured ? "bg-amber-100 text-amber-800 border-0" : "bg-gray-100 text-gray-800 border-0"}>
-                    {company.featured ? "Featured" : "Standard"}
-                  </Badge>
+                  <div className="flex items-center gap-2 text-sm text-slate-600">
+                    <Calendar size={14} />
+                    {formatDate(company.createdAt)}
+                  </div>
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-2">
-                    <Button 
-                      variant="ghost" 
-                      size="icon"
-                      onClick={() => handleView(company.id)}
-                      className="h-8 w-8 hover:bg-blue-50 hover:text-blue-600"
-                      title="View Company"
-                    >
-                      <Eye size={16} />
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="icon"
-                      onClick={() => handleEdit(company.id, companies.entries)}
-                      className="h-8 w-8 hover:bg-green-50 hover:text-green-600"
-                      title="Edit Company"
-                    >
-                      <Edit size={16} />
-                    </Button>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="icon"
+                          onClick={() => handleView(company)}
+                          className="h-8 w-8 hover:bg-blue-50 hover:text-blue-600"
+                          title="View Company Details"
+                        >
+                          <Eye size={16} />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                        <DialogHeader>
+                          <DialogTitle className="flex items-center gap-3">
+                            {company.logo ? (
+                              <Image
+                                src={company.logo}
+                                alt={company.name}
+                                width={48}
+                                height={48}
+                                className="rounded-xl object-cover"
+                              />
+                            ) : (
+                              <div className="w-12 h-12 bg-gradient-to-r from-teal-500 to-teal-600 rounded-xl flex items-center justify-center">
+                                <Building2 size={20} className="text-white" />
+                              </div>
+                            )}
+                            {company.name}
+                          </DialogTitle>
+                          <DialogDescription>
+                            Company Profile Details
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-6">
+                          {company.description && (
+                            <div>
+                              <h4 className="font-semibold mb-2">Description</h4>
+                              <p className="text-slate-600">{company.description}</p>
+                            </div>
+                          )}
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <h4 className="font-semibold mb-2">Founded</h4>
+                              <p className="text-slate-600">{company.founded || "Not specified"}</p>
+                            </div>
+                            <div>
+                              <h4 className="font-semibold mb-2">Employees</h4>
+                              <p className="text-slate-600">{company.employees || "Not specified"}</p>
+                            </div>
+                            <div>
+                              <h4 className="font-semibold mb-2">Location</h4>
+                              <p className="text-slate-600">{company.location || "Not specified"}</p>
+                            </div>
+                            <div>
+                              <h4 className="font-semibold mb-2">Created</h4>
+                              <p className="text-slate-600">{formatDate(company.createdAt)}</p>
+                            </div>
+                          </div>
+                          {(company.email || company.website) && (
+                            <div>
+                              <h4 className="font-semibold mb-2">Contact Information</h4>
+                              <div className="space-y-2">
+                                {company.email && (
+                                  <div className="flex items-center gap-2">
+                                    <Mail size={16} className="text-slate-400" />
+                                    <a href={`mailto:${company.email}`} className="text-teal-600 hover:text-teal-700">
+                                      {company.email}
+                                    </a>
+                                  </div>
+                                )}
+                                {company.website && (
+                                  <div className="flex items-center gap-2">
+                                    <Globe size={16} className="text-slate-400" />
+                                    <a 
+                                      href={company.website} 
+                                      target="_blank" 
+                                      rel="noopener noreferrer"
+                                      className="text-teal-600 hover:text-teal-700"
+                                    >
+                                      {company.website}
+                                    </a>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="icon"
+                          onClick={() => handleEdit(company)}
+                          className="h-8 w-8 hover:bg-green-50 hover:text-green-600"
+                          title="Edit Company"
+                        >
+                          <Edit size={16} />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                        <DialogHeader>
+                          <DialogTitle>Edit Company</DialogTitle>
+                          <DialogDescription>
+                            Update company information for {company.name}
+                          </DialogDescription>
+                        </DialogHeader>
+                        <CompanyForm initialData={company} />
+                      </DialogContent>
+                    </Dialog>
+
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button 

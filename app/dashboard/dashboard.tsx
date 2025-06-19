@@ -26,6 +26,7 @@ interface DashboardProps {
     title: string;
     companyId: number;
     location: string;
+    salary: string | null;
     type: string;
     category: string;
     description: string;
@@ -35,6 +36,12 @@ interface DashboardProps {
     postedAt: Date;
     createdAt: Date;
     updatedAt: Date;
+    company: {
+      id: number;
+      name: string;
+      logo: string | null;
+      location: string | null;
+    };
   }>;
   companies: Array<{
     id: number;
@@ -46,6 +53,7 @@ interface DashboardProps {
     founded: string | null;
     employees: string | null;
     website: string | null;
+    email: string | null;
     createdAt: Date;
     updatedAt: Date;
   }>;
@@ -222,7 +230,7 @@ export function Dashboard({ jobs, companies, applications, analytics }: Dashboar
                       </div>
                     </div>
                   </div>
-                  <JobList jobs={jobs} />
+                  <JobList jobs={jobs} companies={companies} />
                 </TabsContent>
 
                 <TabsContent value="companies" className="p-8">
