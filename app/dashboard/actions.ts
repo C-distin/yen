@@ -135,7 +135,20 @@ export async function updateCompany(
 export async function deleteCompany(id: number) {
   try {
     await db.transaction(async (tx) => {
+      // First delete all applications for jobs of this company
+      const companyJobs = await tx.select({ id: jobs.id }).from(jobs).where(eq(jobs.companyId, id));
+      const jobIds = companyJobs.map(job => job.id);
+      
+      if (jobIds.length > 0) {
+        for (const jobId of jobIds) {
+          await tx.delete(applications).where(eq(applications.jobId, jobId));
+        }
+      }
+      
+      // Then delete all jobs for this company
       await tx.delete(jobs).where(eq(jobs.companyId, id));
+      
+      // Finally delete the company
       await tx.delete(companies).where(eq(companies.id, id));
     });
     
@@ -151,7 +164,7 @@ export async function deleteCompany(id: number) {
 
 export async function getCompanies() {
   try {
-    return await db.select().from(companies);
+    return await db.select().from(companies).orderBy(desc(companies.createdAt));
   } catch (error) {
     console.error("Error fetching companies:", error);
     return [];
@@ -160,10 +173,11 @@ export async function getCompanies() {
 
 export async function getCompanyById(id: number) {
   try {
-    return await db.select().from(companies).where(eq(companies.id, id));
+    const result = await db.select().from(companies).where(eq(companies.id, id));
+    return result[0] || null;
   } catch (error) {
     console.error("Error fetching company:", error);
-    return [];
+    return null;
   }
 }
 
@@ -230,7 +244,13 @@ export async function updateJob(id: number, data: {
 // delete job action
 export async function deleteJob(id: number) {
   try {
-    await db.delete(jobs).where(eq(jobs.id, id));
+    await db.transaction(async (tx) => {
+      // First delete all applications for this job
+      await tx.delete(applications).where(eq(applications.jobId, id));
+      
+      // Then delete the job
+      await tx.delete(jobs).where(eq(jobs.id, id));
+    });
     
     revalidatePath("/dashboard");
     revalidatePath("/jobs");
@@ -277,7 +297,7 @@ export async function getJobs() {
       featured: row.featured ?? false,
       company: {
         id: row.company?.id ?? 0,
-        name: row.company?.name ?? 'Unknown Company',
+        name: row.company?.name ?? "Unknown Company",
         logo: row.company?.logo ?? null,
         location: row.company?.location ?? null,
       }
@@ -325,7 +345,7 @@ export async function getFeaturedJobs() {
       featured: row.featured ?? false,
       company: {
         id: row.company?.id ?? 0,
-        name: row.company?.name ?? 'Unknown Company',
+        name: row.company?.name ?? "Unknown Company",
         logo: row.company?.logo ?? null,
         location: row.company?.location ?? null,
       }
@@ -338,10 +358,49 @@ export async function getFeaturedJobs() {
 
 export async function getJobById(id: number) {
   try {
-    return await db.select().from(jobs).where(eq(jobs.id, id));
+    const result = await db
+      .select({
+        id: jobs.id,
+        title: jobs.title,
+        companyId: jobs.companyId,
+        location: jobs.location,
+        salary: jobs.salary,
+        type: jobs.type,
+        category: jobs.category,
+        description: jobs.description,
+        requirements: jobs.requirements,
+        benefits: jobs.benefits,
+        featured: jobs.featured,
+        postedAt: jobs.postedAt,
+        createdAt: jobs.createdAt,
+        updatedAt: jobs.updatedAt,
+        company: {
+          id: companies.id,
+          name: companies.name,
+          logo: companies.logo,
+          location: companies.location,
+        },
+      })
+      .from(jobs)
+      .leftJoin(companies, eq(jobs.companyId, companies.id))
+      .where(eq(jobs.id, id));
+
+    if (result.length === 0) return null;
+
+    const row = result[0];
+    return {
+      ...row,
+      featured: row.featured ?? false,
+      company: {
+        id: row.company?.id ?? 0,
+        name: row.company?.name ?? "Unknown Company",
+        logo: row.company?.logo ?? null,
+        location: row.company?.location ?? null,
+      }
+    };
   } catch (error) {
     console.error("Error fetching job:", error);
-    return [];
+    return null;
   }
 }
 
@@ -470,6 +529,19 @@ export async function getApplicationsByJobId(jobId: number): Promise<Application
   } catch (error) {
     console.error("Error fetching applications for job:", error);
     return [];
+  }
+}
+
+// Delete application
+export async function deleteApplication(id: number) {
+  try {
+    await db.delete(applications).where(eq(applications.id, id));
+    
+    revalidatePath("/dashboard");
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting application:", error);
+    throw new Error("Failed to delete application");
   }
 }
 
