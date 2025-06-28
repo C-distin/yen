@@ -1,6 +1,6 @@
+import { getAnalytics } from "./dashboard/actions";
 import { Home } from "./home";
 import { getFeaturedJobs } from "./jobs/actions";
-import { getAnalytics } from "./dashboard/actions";
 
 export const metadata = {
   title: "YenDaakye Job Center - Connecting Talent with Opportunity",
@@ -18,10 +18,7 @@ export default async function Page() {
 
   return (
     <main>
-      <Home 
-        featuredJobs={featuredJobs} 
-        stats={analytics}
-      />
+      <Home featuredJobs={featuredJobs} stats={analytics} />
     </main>
   );
 }
