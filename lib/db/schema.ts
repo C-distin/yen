@@ -9,6 +9,7 @@ export const companies = pgTable('companies', {
     location: varchar('location', { length: 256 }),
     employees: varchar('employees', { length: 50 }), // Adjusted length
     website: varchar('website', { length: 512 }),
+    email: varchar('email', { length: 256 }), // Added email field
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at').defaultNow().notNull(),
   });
@@ -37,7 +38,7 @@ export const companies = pgTable('companies', {
     name: text("name").notNull(),
     email: text("email").notNull(),
     phone: varchar("phone", {length: 20}),
-    resume: text("resume").notNull(),
+    resume: text("resume").notNull(), // Now stores Supabase Storage URL
     coverLetter: text("cover_letter"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   });

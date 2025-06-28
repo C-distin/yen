@@ -17,6 +17,7 @@ import { createCompany, updateCompany } from "./actions";
 import { Button } from "@/components/ui/button";
 import type { companies } from "@/lib/db/schema";
 import { useState } from "react";
+import { Upload, Image as ImageIcon } from "lucide-react";
 
 interface CompanyFormProps {
   initialData?: typeof companies.$inferSelect;
@@ -25,19 +26,34 @@ interface CompanyFormProps {
 export function CompanyForm({ initialData }: CompanyFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle");
+  const [logoPreview, setLogoPreview] = useState<string | null>(
+    initialData?.logo || null
+  );
 
   const form = useForm<companyData>({
     resolver: zodResolver(companySchema),
     defaultValues: {
       name: initialData?.name || "",
-      logo: initialData?.logo || "",
       description: initialData?.description || "",
       founded: initialData?.founded || "",
       location: initialData?.location || "",
       employees: initialData?.employees || "",
       website: initialData?.website || "",
+      email: initialData?.email || "",
     },
   });
+
+  const handleLogoChange = (file: File | undefined) => {
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setLogoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setLogoPreview(null);
+    }
+  };
 
   const onSubmit: SubmitHandler<companyData> = async (data) => {
     setIsSubmitting(true);
@@ -53,6 +69,7 @@ export function CompanyForm({ initialData }: CompanyFormProps) {
         location: data.location || null,
         employees: data.employees || null,
         website: data.website || null,
+        email: data.email || null,
       };
 
       if (initialData) {
@@ -63,6 +80,7 @@ export function CompanyForm({ initialData }: CompanyFormProps) {
       
       setSubmitStatus("success");
       form.reset();
+      setLogoPreview(null);
     } catch (error) {
       console.error("Form submission error:", error);
       setSubmitStatus("error");
@@ -126,17 +144,19 @@ export function CompanyForm({ initialData }: CompanyFormProps) {
                 </FormItem>
               )}
             />
+            
             <FormField
               control={form.control}
-              name="logo"
+              name="email"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-slate-700 font-medium">
-                    Logo URL
+                    Email Address
                   </FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="https://example.com/logo.png"
+                      type="email"
+                      placeholder="company@example.com"
                       {...field}
                       className="h-12 border-slate-200 focus:border-teal-500 focus:ring-teal-500"
                     />
@@ -146,6 +166,53 @@ export function CompanyForm({ initialData }: CompanyFormProps) {
               )}
             />
           </div>
+
+          {/* Logo Upload */}
+          <FormField
+            control={form.control}
+            name="logo"
+            render={({ field: { onChange, value, ...field } }) => (
+              <FormItem>
+                <FormLabel className="text-slate-700 font-medium">
+                  Company Logo
+                </FormLabel>
+                <FormControl>
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-4">
+                      <div className="relative">
+                        <Input
+                          type="file"
+                          accept="image/jpeg,image/jpg,image/png"
+                          className="h-12 border-slate-200 focus:border-teal-500 focus:ring-teal-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            onChange(file);
+                            handleLogoChange(file);
+                          }}
+                          {...field}
+                        />
+                        <Upload size={18} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
+                      </div>
+                      
+                      {logoPreview && (
+                        <div className="w-16 h-16 border border-slate-200 rounded-xl overflow-hidden">
+                          <img
+                            src={logoPreview}
+                            alt="Logo preview"
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-xs text-slate-500">
+                      Upload a company logo in JPG or PNG format (max 5MB)
+                    </p>
+                  </div>
+                </FormControl>
+                <FormMessage className="text-sm text-red-600" />
+              </FormItem>
+            )}
+          />
           
           <FormField
             control={form.control}

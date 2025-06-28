@@ -5,8 +5,10 @@ import { motion } from "motion/react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash, Eye, Calendar, AlertTriangle } from "lucide-react";
-import { deleteJob } from "./actions";
+import { Edit, Trash, Eye, Calendar, AlertTriangle, Users } from "lucide-react";
+import { deleteJob, getApplicationsByJobId, type ApplicationWithJob } from "./actions";
+import { JobApplications } from "./job-applications";
+import { JobForm } from "./job";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,12 +20,21 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 interface Job {
   id: number;
   title: string;
   companyId: number;
   location: string;
+  salary: string | null;
   type: string;
   category: string;
   description: string;
@@ -33,14 +44,44 @@ interface Job {
   postedAt: Date;
   createdAt: Date;
   updatedAt: Date;
+  company: {
+    id: number;
+    name: string;
+    logo: string | null;
+    location: string | null;
+  };
+}
+
+interface Company {
+  id: number;
+  name: string;
+  location: string | null;
+  featured: boolean;
+  logo: string | null;
+  description: string | null;
+  founded: string | null;
+  employees: string | null;
+  website: string | null;
+  email: string | null;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 interface JobListProps {
   jobs: Job[];
+  companies: Company[];
 }
 
-export function JobList({ jobs }: JobListProps) {
+export function JobList({ jobs, companies }: JobListProps) {
   const [isDeleting, setIsDeleting] = useState<number | null>(null);
+  const [selectedJobApplications, setSelectedJobApplications] = useState<{
+    jobId: number;
+    jobTitle: string;
+    applications: ApplicationWithJob[];
+  } | null>(null);
+  const [loadingApplications, setLoadingApplications] = useState<number | null>(null);
+  const [editingJob, setEditingJob] = useState<Job | null>(null);
+  const [viewingJob, setViewingJob] = useState<Job | null>(null);
 
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat('en-US', {
@@ -72,14 +113,41 @@ export function JobList({ jobs }: JobListProps) {
     }
   };
 
-  const handleView = (id: number) => {
-    window.open(`/jobs/${id}`, '_blank');
+  const handleViewApplications = async (jobId: number, jobTitle: string) => {
+    setLoadingApplications(jobId);
+    try {
+      const applications = await getApplicationsByJobId(jobId);
+      setSelectedJobApplications({
+        jobId,
+        jobTitle,
+        applications,
+      });
+    } catch (error) {
+      console.error("Error fetching applications:", error);
+    } finally {
+      setLoadingApplications(null);
+    }
   };
 
-  const handleEdit = (id: number) => {
-    // TODO: Implement edit functionality
-    console.log("Edit job:", id);
+  const handleView = (job: Job) => {
+    setViewingJob(job);
   };
+
+  const handleEdit = (job: Job) => {
+    setEditingJob(job);
+  };
+
+  // If viewing applications for a specific job
+  if (selectedJobApplications) {
+    return (
+      <JobApplications
+        jobId={selectedJobApplications.jobId}
+        jobTitle={selectedJobApplications.jobTitle}
+        applications={selectedJobApplications.applications}
+        onBack={() => setSelectedJobApplications(null)}
+      />
+    );
+  }
 
   if (jobs.length === 0) {
     return (
@@ -120,9 +188,9 @@ export function JobList({ jobs }: JobListProps) {
           <TableHeader>
             <TableRow className="bg-slate-50">
               <TableHead className="font-semibold text-slate-700">Job Title</TableHead>
+              <TableHead className="font-semibold text-slate-700">Company</TableHead>
               <TableHead className="font-semibold text-slate-700">Location</TableHead>
               <TableHead className="font-semibold text-slate-700">Type</TableHead>
-              <TableHead className="font-semibold text-slate-700">Category</TableHead>
               <TableHead className="font-semibold text-slate-700">Posted</TableHead>
               <TableHead className="font-semibold text-slate-700">Status</TableHead>
               <TableHead className="font-semibold text-slate-700 text-right">Actions</TableHead>
@@ -140,7 +208,12 @@ export function JobList({ jobs }: JobListProps) {
                 <TableCell>
                   <div className="space-y-1">
                     <p className="font-medium text-slate-900">{job.title}</p>
-                    <p className="text-sm text-slate-500">Company ID: {job.companyId}</p>
+                    <p className="text-sm text-slate-500">{job.category}</p>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <span className="text-slate-700">{job.company.name}</span>
                   </div>
                 </TableCell>
                 <TableCell>
@@ -152,9 +225,6 @@ export function JobList({ jobs }: JobListProps) {
                   <Badge className={`${getTypeColor(job.type)} border-0`}>
                     {job.type}
                   </Badge>
-                </TableCell>
-                <TableCell>
-                  <span className="text-slate-700">{job.category}</span>
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2 text-sm text-slate-600">
@@ -172,21 +242,90 @@ export function JobList({ jobs }: JobListProps) {
                     <Button 
                       variant="ghost" 
                       size="icon"
-                      onClick={() => handleView(job.id)}
-                      className="h-8 w-8 hover:bg-blue-50 hover:text-blue-600"
-                      title="View Job"
+                      onClick={() => handleViewApplications(job.id, job.title)}
+                      disabled={loadingApplications === job.id}
+                      className="h-8 w-8 hover:bg-purple-50 hover:text-purple-600"
+                      title="View Applications"
                     >
-                      <Eye size={16} />
+                      {loadingApplications === job.id ? (
+                        <div className="w-4 h-4 border-2 border-purple-600/30 border-t-purple-600 rounded-full animate-spin" />
+                      ) : (
+                        <Users size={16} />
+                      )}
                     </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="icon"
-                      onClick={() => handleEdit(job.id)}
-                      className="h-8 w-8 hover:bg-green-50 hover:text-green-600"
-                      title="Edit Job"
-                    >
-                      <Edit size={16} />
-                    </Button>
+
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="icon"
+                          onClick={() => handleView(job)}
+                          className="h-8 w-8 hover:bg-blue-50 hover:text-blue-600"
+                          title="View Job Details"
+                        >
+                          <Eye size={16} />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                        <DialogHeader>
+                          <DialogTitle>{job.title}</DialogTitle>
+                          <DialogDescription>
+                            {job.company.name} • {job.location}
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-6">
+                          <div>
+                            <h4 className="font-semibold mb-2">Description</h4>
+                            <p className="text-slate-600 whitespace-pre-line">{job.description}</p>
+                          </div>
+                          <div>
+                            <h4 className="font-semibold mb-2">Requirements</h4>
+                            <p className="text-slate-600 whitespace-pre-line">{job.requirements}</p>
+                          </div>
+                          <div>
+                            <h4 className="font-semibold mb-2">Benefits</h4>
+                            <p className="text-slate-600 whitespace-pre-line">{job.benefits}</p>
+                          </div>
+                          <div className="flex gap-2">
+                            <Badge className={`${getTypeColor(job.type)} border`}>
+                              {job.type}
+                            </Badge>
+                            <Badge variant="outline">{job.category}</Badge>
+                            {job.salary && <Badge variant="outline">{job.salary}</Badge>}
+                          </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="icon"
+                          onClick={() => handleEdit(job)}
+                          className="h-8 w-8 hover:bg-green-50 hover:text-green-600"
+                          title="Edit Job"
+                        >
+                          <Edit size={16} />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                        <DialogHeader>
+                          <DialogTitle>Edit Job</DialogTitle>
+                          <DialogDescription>
+                            Update job details for {job.title}
+                          </DialogDescription>
+                        </DialogHeader>
+                        <JobForm 
+                          initialData={{
+                            ...job,
+                            company: job.company.name
+                          }} 
+                          companies={companies} 
+                        />
+                      </DialogContent>
+                    </Dialog>
+
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button 

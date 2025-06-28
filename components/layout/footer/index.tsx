@@ -71,11 +71,6 @@ export function Footer() {
       link: "tel:+233503336534",
     },
     {
-      icon: Phone,
-      text: "+233 24 888 3460",
-      link: "tel:+233248883460",
-    },
-    {
       icon: MapPin,
       text: "Accra, Ghana",
     },

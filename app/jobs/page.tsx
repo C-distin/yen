@@ -1,5 +1,5 @@
 import { Jobs } from "./jobs";
-import { getJobs } from "./actions";
+import { getJobs } from "../dashboard/actions";
 
 export const metadata = {
   title: "Jobs | YenDaakye - Find Your Dream Career",

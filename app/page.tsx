@@ -1,6 +1,6 @@
 import { getAnalytics } from "./dashboard/actions";
+import { getFeaturedJobs } from "./dashboard/actions";
 import { Home } from "./home";
-import { getFeaturedJobs } from "./jobs/actions";
 
 export const metadata = {
   title: "YenDaakye Job Center - Connecting Talent with Opportunity",

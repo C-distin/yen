@@ -16,6 +16,12 @@ export function Jobs({ initialJobs }: JobsProps) {
   const [filteredJobs, setFilteredJobs] = useState<JobWithCompany[]>(initialJobs);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Update jobs when initialJobs changes
+  useEffect(() => {
+    setJobs(initialJobs);
+    setFilteredJobs(initialJobs);
+  }, [initialJobs]);
+
   const handleFiltersChange = (filters: {
     search: string;
     location: string;

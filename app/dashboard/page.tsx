@@ -1,19 +1,20 @@
 import { Dashboard } from "./dashboard";
-import { getJobs, getCompanies, getAnalytics } from "./actions";
+import { getJobs, getCompanies, getAnalytics, getApplications } from "./actions";
 
 export const metadata = {
   title: "Admin Dashboard | YenDaakye - Manage Jobs & Companies",
   description:
-    "Admin dashboard for managing job postings, companies, and tracking performance metrics on YenDaakye Job Center platform.",
+    "Admin dashboard for managing job postings, companies, applications, and tracking performance metrics on YenDaakye Job Center platform.",
   keywords:
     "admin dashboard, job management, company management, analytics, yendaakye admin",
 };
 
 export default async function Page() {
-  const [jobs, companies, analytics] = await Promise.all([
+  const [jobs, companies, analytics, applications] = await Promise.all([
     getJobs(),
     getCompanies(),
     getAnalytics(),
+    getApplications(),
   ]);
 
   // Transform companies data to match expected interface
@@ -25,14 +26,10 @@ export default async function Page() {
   return (
     <main>
       <Dashboard 
-        jobs={jobs.map(job => ({
-          ...job,
-          featured: job.featured ?? false, // Convert null to false
-          logo: undefined, // Remove logo field
-          salary: undefined, // Remove salary field
-        }))}
+        jobs={jobs}
         companies={transformedCompanies} 
-        analytics={analytics} 
+        analytics={analytics}
+        applications={applications}
       />
     </main>
   );
