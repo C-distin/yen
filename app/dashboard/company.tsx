@@ -16,8 +16,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { createCompany, updateCompany } from "./actions";
 import { Button } from "@/components/ui/button";
 import type { companies } from "@/lib/db/schema";
-import { useState } from "react";
-import { Upload, Image as ImageIcon } from "lucide-react";
+import { useState, useRef } from "react";
+import { Upload, Image as ImageIcon, X, CheckCircle, AlertCircle } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface CompanyFormProps {
   initialData?: typeof companies.$inferSelect;
@@ -25,10 +26,16 @@ interface CompanyFormProps {
 
 export function CompanyForm({ initialData }: CompanyFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle");
+  const [submitStatus, setSubmitStatus] = useState<{
+    type: "idle" | "success" | "error";
+    message?: string;
+  }>({ type: "idle" });
+  
   const [logoPreview, setLogoPreview] = useState<string | null>(
     initialData?.logo || null
   );
+  const [isDragOver, setIsDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<companyData>({
     resolver: zodResolver(companySchema),
@@ -45,45 +52,116 @@ export function CompanyForm({ initialData }: CompanyFormProps) {
 
   const handleLogoChange = (file: File | undefined) => {
     if (file) {
+      // Validate file size
+      if (file.size > 5 * 1024 * 1024) { // 5MB
+        setSubmitStatus({
+          type: "error",
+          message: "Logo file size must be less than 5MB"
+        });
+        return;
+      }
+
+      // Validate file type
+      if (!["image/jpeg", "image/jpg", "image/png"].includes(file.type)) {
+        setSubmitStatus({
+          type: "error",
+          message: "Logo must be a JPG or PNG image"
+        });
+        return;
+      }
+
       const reader = new FileReader();
       reader.onloadend = () => {
         setLogoPreview(reader.result as string);
       };
       reader.readAsDataURL(file);
+      
+      // Clear any previous error messages
+      setSubmitStatus({ type: "idle" });
     } else {
-      setLogoPreview(null);
+      setLogoPreview(initialData?.logo || null);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    
+    const files = e.dataTransfer.files;
+    if (files && files[0]) {
+      const file = files[0];
+      form.setValue("logo", file);
+      handleLogoChange(file);
+    }
+  };
+
+  const handleRemoveLogo = () => {
+    form.setValue("logo", undefined);
+    setLogoPreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
     }
   };
 
   const onSubmit: SubmitHandler<companyData> = async (data) => {
     setIsSubmitting(true);
-    setSubmitStatus("idle");
+    setSubmitStatus({ type: "idle" });
 
     try {
       // Clean up the data - remove empty strings and convert to null where appropriate
       const cleanedData = {
-        name: data.name,
+        name: data.name.trim(),
         logo: data.logo || null,
-        description: data.description || null,
-        founded: data.founded || null,
-        location: data.location || null,
-        employees: data.employees || null,
-        website: data.website || null,
-        email: data.email || null,
+        description: data.description?.trim() || null,
+        founded: data.founded?.trim() || null,
+        location: data.location?.trim() || null,
+        employees: data.employees?.trim() || null,
+        website: data.website?.trim() || null,
+        email: data.email?.trim() || null,
       };
 
+      let result;
       if (initialData) {
-        await updateCompany(initialData.id, cleanedData);
+        result = await updateCompany(initialData.id, cleanedData);
       } else {
-        await createCompany(cleanedData);
+        result = await createCompany(cleanedData);
       }
       
-      setSubmitStatus("success");
-      form.reset();
-      setLogoPreview(null);
+      if (result.success) {
+        setSubmitStatus({
+          type: "success",
+          message: result.message || `Company ${initialData ? "updated" : "created"} successfully!`
+        });
+        
+        if (!initialData) {
+          form.reset();
+          setLogoPreview(null);
+          if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+          }
+        }
+      } else {
+        setSubmitStatus({
+          type: "error",
+          message: result.message || `Failed to ${initialData ? "update" : "create"} company`
+        });
+      }
     } catch (error) {
       console.error("Form submission error:", error);
-      setSubmitStatus("error");
+      setSubmitStatus({
+        type: "error",
+        message: error instanceof Error ? error.message : "An unexpected error occurred"
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -92,31 +170,23 @@ export function CompanyForm({ initialData }: CompanyFormProps) {
   return (
     <div className="space-y-6">
       {/* Success/Error Messages */}
-      {submitStatus === "success" && (
+      {submitStatus.type === "success" && (
         <div className="bg-green-50 border border-green-200 rounded-lg p-4">
           <div className="flex items-center gap-2">
-            <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
-              <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-              </svg>
-            </div>
+            <CheckCircle className="w-5 h-5 text-green-600" />
             <p className="text-green-800 font-medium">
-              Company {initialData ? "updated" : "created"} successfully!
+              {submitStatus.message}
             </p>
           </div>
         </div>
       )}
 
-      {submitStatus === "error" && (
+      {submitStatus.type === "error" && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
           <div className="flex items-center gap-2">
-            <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
-              <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-              </svg>
-            </div>
+            <AlertCircle className="w-5 h-5 text-red-600" />
             <p className="text-red-800 font-medium">
-              Failed to {initialData ? "update" : "create"} company. Please try again.
+              {submitStatus.message}
             </p>
           </div>
         </div>
@@ -178,34 +248,76 @@ export function CompanyForm({ initialData }: CompanyFormProps) {
                 </FormLabel>
                 <FormControl>
                   <div className="space-y-4">
-                    <div className="flex items-center gap-4">
-                      <div className="relative">
-                        <Input
-                          type="file"
-                          accept="image/jpeg,image/jpg,image/png"
-                          className="h-12 border-slate-200 focus:border-teal-500 focus:ring-teal-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            onChange(file);
-                            handleLogoChange(file);
-                          }}
-                          {...field}
-                        />
-                        <Upload size={18} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
-                      </div>
+                    {/* Drop Zone */}
+                    <div
+                      className={cn(
+                        "relative border-2 border-dashed rounded-lg p-6 transition-colors",
+                        isDragOver 
+                          ? "border-teal-500 bg-teal-50" 
+                          : "border-slate-300 hover:border-slate-400",
+                        "cursor-pointer"
+                      )}
+                      onDragOver={handleDragOver}
+                      onDragLeave={handleDragLeave}
+                      onDrop={handleDrop}
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/jpeg,image/jpg,image/png"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          onChange(file);
+                          handleLogoChange(file);
+                        }}
+                        {...field}
+                      />
                       
-                      {logoPreview && (
-                        <div className="w-16 h-16 border border-slate-200 rounded-xl overflow-hidden">
-                          <img
-                            src={logoPreview}
-                            alt="Logo preview"
-                            className="w-full h-full object-cover"
-                          />
+                      {logoPreview ? (
+                        <div className="flex items-center gap-4">
+                          <div className="relative w-16 h-16 border border-slate-200 rounded-xl overflow-hidden">
+                            <img
+                              src={logoPreview}
+                              alt="Logo preview"
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-slate-700">Logo uploaded</p>
+                            <p className="text-xs text-slate-500">Click to change or drag a new image</p>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRemoveLogo();
+                            }}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="text-center">
+                          <div className="w-12 h-12 mx-auto mb-3 bg-slate-100 rounded-full flex items-center justify-center">
+                            <Upload className="w-6 h-6 text-slate-400" />
+                          </div>
+                          <p className="text-sm font-medium text-slate-700 mb-1">
+                            Click to upload or drag and drop
+                          </p>
+                          <p className="text-xs text-slate-500">
+                            PNG, JPG up to 5MB
+                          </p>
                         </div>
                       )}
                     </div>
+                    
                     <p className="text-xs text-slate-500">
-                      Upload a company logo in JPG or PNG format (max 5MB)
+                      Upload a company logo in JPG or PNG format. Maximum file size is 5MB.
                     </p>
                   </div>
                 </FormControl>
