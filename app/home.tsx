@@ -1,25 +1,25 @@
 "use client";
 
-import { motion } from "motion/react";
-import Link from "next/link";
-import Image from "next/image";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  Search,
-  Briefcase,
-  Users,
-  TrendingUp,
-  Star,
-  MapPin,
-  Calendar,
-  Building2,
-  ChevronRight,
-  CheckCircle,
-  ArrowRight,
-  type LucideIcon,
-} from "lucide-react";
 import type { JobWithCompany } from "@/app/jobs/actions";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  ArrowRight,
+  Briefcase,
+  Building2,
+  Calendar,
+  CheckCircle,
+  ChevronRight,
+  type LucideIcon,
+  MapPin,
+  Search,
+  Star,
+  TrendingUp,
+  Users,
+} from "lucide-react";
+import { motion } from "motion/react";
+import Image from "next/image";
+import Link from "next/link";
 
 interface HomeProps {
   featuredJobs: JobWithCompany[];
@@ -54,28 +54,31 @@ export function Home({ featuredJobs, stats }: HomeProps) {
     {
       icon: Search,
       title: "Smart Job Matching",
-      description: "Our AI-powered system matches you with jobs that fit your skills, experience, and career goals perfectly.",
+      description:
+        "Our AI-powered system matches you with jobs that fit your skills, experience, and career goals perfectly.",
     },
     {
       icon: Users,
       title: "Trusted Network",
-      description: "Connect with verified employers and top companies across Ghana and West Africa.",
+      description:
+        "Connect with verified employers and top companies across Ghana and West Africa.",
     },
     {
       icon: TrendingUp,
       title: "Career Growth",
-      description: "Access resources, training, and opportunities to advance your career and reach new heights.",
+      description:
+        "Access resources, training, and opportunities to advance your career and reach new heights.",
     },
   ];
 
   const statsData: StatCardProps[] = [
     {
-      number: stats.totalJobs.toString() + "+",
+      number: `${stats.totalJobs.toString()}+`,
       label: "Active Jobs",
       icon: Briefcase,
     },
     {
-      number: stats.totalCompanies.toString() + "+",
+      number: `${stats.totalCompanies.toString()}+`,
       label: "Partner Companies",
       icon: Building2,
     },
@@ -96,42 +99,45 @@ export function Home({ featuredJobs, stats }: HomeProps) {
       name: "Akosua Mensah",
       role: "Software Engineer",
       company: "Tech Solutions Ghana",
-      content: "YenDaakye helped me find my dream job in tech. The process was smooth and the team was incredibly supportive throughout.",
+      content:
+        "YenDaakye helped me find my dream job in tech. The process was smooth and the team was incredibly supportive throughout.",
       image: "/api/placeholder/100/100",
     },
     {
       name: "Kwame Asante",
       role: "Marketing Manager",
       company: "Digital Marketing Pro",
-      content: "I found multiple opportunities through YenDaakye. The platform made it easy to connect with top employers in my field.",
+      content:
+        "I found multiple opportunities through YenDaakye. The platform made it easy to connect with top employers in my field.",
       image: "/api/placeholder/100/100",
     },
     {
       name: "Ama Osei",
       role: "Financial Analyst",
       company: "Ghana Finance Corp",
-      content: "The personalized job recommendations were spot-on. I landed a role that perfectly matched my skills and aspirations.",
+      content:
+        "The personalized job recommendations were spot-on. I landed a role that perfectly matched my skills and aspirations.",
       image: "/api/placeholder/100/100",
     },
   ];
 
   const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+    return new Intl.DateTimeFormat("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     }).format(new Date(date));
   };
 
   const getTypeColor = (type: string) => {
     const colors: Record<string, string> = {
-      'Full-time': 'bg-green-100 text-green-800 border-green-200',
-      'Part-time': 'bg-blue-100 text-blue-800 border-blue-200',
-      'Contract': 'bg-orange-100 text-orange-800 border-orange-200',
-      'Internship': 'bg-purple-100 text-purple-800 border-purple-200',
-      'Remote': 'bg-teal-100 text-teal-800 border-teal-200'
+      "Full-time": "bg-green-100 text-green-800 border-green-200",
+      "Part-time": "bg-blue-100 text-blue-800 border-blue-200",
+      Contract: "bg-orange-100 text-orange-800 border-orange-200",
+      Internship: "bg-purple-100 text-purple-800 border-purple-200",
+      Remote: "bg-teal-100 text-teal-800 border-teal-200",
     };
-    return colors[type] || 'bg-gray-100 text-gray-800 border-gray-200';
+    return colors[type] || "bg-gray-100 text-gray-800 border-gray-200";
   };
 
   return (
@@ -149,11 +155,10 @@ export function Home({ featuredJobs, stats }: HomeProps) {
             >
               <div>
                 <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
-                  Find Your Dream{" "}
-                  <span className="text-amber-400">Career</span>
+                  Find Your Dream <span className="text-amber-400">Career</span>
                 </h1>
                 <p className="text-xl md:text-2xl text-teal-100 leading-relaxed mb-8">
-                  Connect with top employers across Ghana and West Africa. 
+                  Connect with top employers across Ghana and West Africa.
                   Discover opportunities that match your skills and ambitions.
                 </p>
               </div>
@@ -199,14 +204,18 @@ export function Home({ featuredJobs, stats }: HomeProps) {
                       <p className="text-teal-100">Live platform metrics</p>
                     </div>
                   </div>
-                  
+
                   <div className="grid grid-cols-2 gap-4">
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-amber-400">{stats.totalJobs}+</div>
+                      <div className="text-2xl font-bold text-amber-400">
+                        {stats.totalJobs}+
+                      </div>
                       <div className="text-sm text-teal-100">Active Jobs</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-amber-400">{stats.totalCompanies}+</div>
+                      <div className="text-2xl font-bold text-amber-400">
+                        {stats.totalCompanies}+
+                      </div>
                       <div className="text-sm text-teal-100">Companies</div>
                     </div>
                   </div>
@@ -255,7 +264,8 @@ export function Home({ featuredJobs, stats }: HomeProps) {
               Why Choose YenDaakye?
             </h2>
             <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
-              We're more than just a job board. We're your partner in building a successful career.
+              We're more than just a job board. We're your partner in building a
+              successful career.
             </p>
           </motion.div>
 
@@ -299,7 +309,8 @@ export function Home({ featuredJobs, stats }: HomeProps) {
                 Featured Opportunities
               </h2>
               <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
-                Discover hand-picked job opportunities from top companies looking for talented professionals.
+                Discover hand-picked job opportunities from top companies
+                looking for talented professionals.
               </p>
             </motion.div>
 
@@ -333,10 +344,12 @@ export function Home({ featuredJobs, stats }: HomeProps) {
                           <h3 className="font-bold text-slate-900 group-hover:text-teal-600 transition-colors">
                             {job.title}
                           </h3>
-                          <p className="text-sm text-slate-600">{job.company.name}</p>
+                          <p className="text-sm text-slate-600">
+                            {job.company.name}
+                          </p>
                         </div>
                       </div>
-                      
+
                       <div className="flex items-center gap-1 bg-amber-100 text-amber-800 px-2 py-1 rounded-full text-xs font-medium">
                         <Star size={12} className="fill-current" />
                         Featured
@@ -372,14 +385,14 @@ export function Home({ featuredJobs, stats }: HomeProps) {
 
                     {/* Actions */}
                     <div className="flex gap-3 pt-4 border-t border-slate-100">
-                      <Button 
+                      <Button
                         className="flex-1 bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white"
                         size="sm"
                       >
                         Apply Now
                       </Button>
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         size="sm"
                         className="border-slate-200 hover:border-teal-300 hover:bg-teal-50"
                       >
@@ -424,7 +437,8 @@ export function Home({ featuredJobs, stats }: HomeProps) {
               Success Stories
             </h2>
             <p className="text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
-              Hear from professionals who found their dream careers through YenDaakye.
+              Hear from professionals who found their dream careers through
+              YenDaakye.
             </p>
           </motion.div>
 
@@ -443,19 +457,29 @@ export function Home({ featuredJobs, stats }: HomeProps) {
                       <Users size={24} className="text-white" />
                     </div>
                     <div>
-                      <h4 className="font-bold text-slate-900">{testimonial.name}</h4>
-                      <p className="text-sm text-slate-600">{testimonial.role}</p>
-                      <p className="text-xs text-teal-600">{testimonial.company}</p>
+                      <h4 className="font-bold text-slate-900">
+                        {testimonial.name}
+                      </h4>
+                      <p className="text-sm text-slate-600">
+                        {testimonial.role}
+                      </p>
+                      <p className="text-xs text-teal-600">
+                        {testimonial.company}
+                      </p>
                     </div>
                   </div>
-                  
+
                   <p className="text-slate-600 leading-relaxed italic">
                     "{testimonial.content}"
                   </p>
-                  
+
                   <div className="flex items-center gap-1 mt-4">
                     {[...Array(5)].map((_, i) => (
-                      <Star key={i} size={16} className="text-amber-400 fill-current" />
+                      <Star
+                        key={i}
+                        size={16}
+                        className="text-amber-400 fill-current"
+                      />
                     ))}
                   </div>
                 </div>
@@ -478,8 +502,8 @@ export function Home({ featuredJobs, stats }: HomeProps) {
               Ready to Start Your Journey?
             </h2>
             <p className="text-xl text-teal-100 mb-8 max-w-3xl mx-auto leading-relaxed">
-              Join thousands of professionals who have found their dream careers through YenDaakye. 
-              Your next opportunity is just a click away.
+              Join thousands of professionals who have found their dream careers
+              through YenDaakye. Your next opportunity is just a click away.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">

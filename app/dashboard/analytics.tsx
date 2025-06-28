@@ -1,13 +1,14 @@
 import { motion } from "motion/react";
 import { Card } from "@/components/ui/card";
-import { TrendingUp, Building2, Briefcase, Users } from "lucide-react";
+import { TrendingUp, Building2, Briefcase, Users, FileText } from "lucide-react";
 
 interface AnalyticsProps {
   totalJobs: number;
   totalCompanies: number;
+  totalApplications: number;
 }
 
-export function Analytics({ totalJobs, totalCompanies }: AnalyticsProps) {
+export function Analytics({ totalJobs, totalCompanies, totalApplications }: AnalyticsProps) {
   const stats = [
     {
       title: "Total Jobs",
@@ -26,17 +27,17 @@ export function Analytics({ totalJobs, totalCompanies }: AnalyticsProps) {
       textColor: "text-green-600"
     },
     {
-      title: "Active Listings",
-      value: totalJobs,
-      icon: TrendingUp,
+      title: "Total Applications",
+      value: totalApplications,
+      icon: FileText,
       color: "from-purple-500 to-purple-600",
       bgColor: "bg-purple-50",
       textColor: "text-purple-600"
     },
     {
-      title: "Platform Users",
-      value: "1.2K+",
-      icon: Users,
+      title: "Active Listings",
+      value: totalJobs,
+      icon: TrendingUp,
       color: "from-orange-500 to-orange-600",
       bgColor: "bg-orange-50",
       textColor: "text-orange-600"

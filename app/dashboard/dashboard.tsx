@@ -5,6 +5,7 @@ import { motion } from "motion/react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { JobList } from "./job-list";
 import { CompanyList } from "./company-list";
+import { ApplicationList } from "./application-list";
 import { Analytics } from "./analytics";
 import { CompanyForm } from "./company";
 import { JobForm } from "./job";
@@ -14,8 +15,10 @@ import {
   Briefcase, 
   Plus,
   Users,
-  TrendingUp
+  TrendingUp,
+  FileText
 } from "lucide-react";
+import type { ApplicationWithJob } from "./actions";
 
 interface DashboardProps {
   jobs: Array<{
@@ -23,6 +26,7 @@ interface DashboardProps {
     title: string;
     companyId: number;
     location: string;
+    salary: string | null;
     type: string;
     category: string;
     description: string;
@@ -32,6 +36,12 @@ interface DashboardProps {
     postedAt: Date;
     createdAt: Date;
     updatedAt: Date;
+    company: {
+      id: number;
+      name: string;
+      logo: string | null;
+      location: string | null;
+    };
   }>;
   companies: Array<{
     id: number;
@@ -43,16 +53,19 @@ interface DashboardProps {
     founded: string | null;
     employees: string | null;
     website: string | null;
+    email: string | null;
     createdAt: Date;
     updatedAt: Date;
   }>;
+  applications: ApplicationWithJob[];
   analytics: {
     totalJobs: number;
     totalCompanies: number;
+    totalApplications: number;
   };
 }
 
-export function Dashboard({ jobs, companies, analytics }: DashboardProps) {
+export function Dashboard({ jobs, companies, applications, analytics }: DashboardProps) {
   const [activeTab, setActiveTab] = useState("analytics");
 
   const tabItems = [
@@ -85,6 +98,12 @@ export function Dashboard({ jobs, companies, analytics }: DashboardProps) {
       label: "Create Company",
       icon: Users,
       description: "Add new company"
+    },
+    {
+      value: "applications",
+      label: "Applications",
+      icon: FileText,
+      description: "View job applications"
     }
   ];
 
@@ -104,7 +123,7 @@ export function Dashboard({ jobs, companies, analytics }: DashboardProps) {
               Admin <span className="text-amber-400">Dashboard</span>
             </h1>
             <p className="text-xl md:text-2xl text-teal-100 max-w-3xl mx-auto leading-relaxed">
-              Manage your job postings, companies, and track performance metrics
+              Manage your job postings, companies, applications, and track performance metrics
               all in one place.
             </p>
           </motion.div>
@@ -131,7 +150,7 @@ export function Dashboard({ jobs, companies, analytics }: DashboardProps) {
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
                   {tabItems.map((item, index) => (
                     <motion.button
                       key={item.value}
@@ -211,7 +230,7 @@ export function Dashboard({ jobs, companies, analytics }: DashboardProps) {
                       </div>
                     </div>
                   </div>
-                  <JobList jobs={jobs} />
+                  <JobList jobs={jobs} companies={companies} />
                 </TabsContent>
 
                 <TabsContent value="companies" className="p-8">
@@ -227,6 +246,21 @@ export function Dashboard({ jobs, companies, analytics }: DashboardProps) {
                     </div>
                   </div>
                   <CompanyList companies={companies} />
+                </TabsContent>
+
+                <TabsContent value="applications" className="p-8">
+                  <div className="mb-6">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-12 h-12 bg-gradient-to-r from-teal-500 to-teal-600 rounded-xl flex items-center justify-center">
+                        <FileText size={20} className="text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-2xl font-bold text-slate-900">Job Applications</h3>
+                        <p className="text-slate-600">View and manage all job applications</p>
+                      </div>
+                    </div>
+                  </div>
+                  <ApplicationList applications={applications} />
                 </TabsContent>
 
                 <TabsContent value="jobForm" className="p-0">

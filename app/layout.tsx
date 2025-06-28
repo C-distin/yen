@@ -1,6 +1,6 @@
-import type { Metadata } from "next";
 import { geist } from "@/components/fonts";
 import { Header } from "@/components/layout/header";
+import type { Metadata } from "next";
 import "./globals.css";
 import { Footer } from "@/components/layout/footer";
 
