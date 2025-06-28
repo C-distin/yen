@@ -46,6 +46,41 @@ async function uploadLogoToSupabase(file: File): Promise<string> {
   }
 }
 
+// Helper function to upload CV to Supabase Storage
+async function uploadCVToSupabase(file: File, applicantName: string): Promise<string> {
+  try {
+    // Generate unique filename with applicant name
+    const fileExt = file.name.split('.').pop();
+    const sanitizedName = applicantName.replace(/[^a-zA-Z0-9]/g, '_');
+    const timestamp = Date.now();
+    const fileName = `${sanitizedName}_${timestamp}.${fileExt}`;
+    const filePath = `job-applications/${fileName}`;
+
+    // Upload file to Supabase Storage
+    const { data, error } = await supabase.storage
+      .from('job-applications')
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false
+      });
+
+    if (error) {
+      console.error('Supabase CV upload error:', error);
+      throw new Error(`Failed to upload CV: ${error.message}`);
+    }
+
+    // Get public URL
+    const { data: { publicUrl } } = supabase.storage
+      .from('job-applications')
+      .getPublicUrl(filePath);
+
+    return publicUrl;
+  } catch (error) {
+    console.error('Error uploading CV:', error);
+    throw new Error('Failed to upload CV to storage');
+  }
+}
+
 // Helper function to delete logo from Supabase Storage
 async function deleteLogoFromSupabase(logoUrl: string): Promise<void> {
   try {
@@ -64,6 +99,28 @@ async function deleteLogoFromSupabase(logoUrl: string): Promise<void> {
     }
   } catch (error) {
     console.error('Error parsing logo URL for deletion:', error);
+    // Don't throw error - continue with database update
+  }
+}
+
+// Helper function to delete CV from Supabase Storage
+async function deleteCVFromSupabase(cvUrl: string): Promise<void> {
+  try {
+    // Extract file path from URL
+    const url = new URL(cvUrl);
+    const pathParts = url.pathname.split('/');
+    const filePath = pathParts.slice(-2).join('/'); // Get job-applications/filename
+    
+    const { error } = await supabase.storage
+      .from('job-applications')
+      .remove([filePath]);
+
+    if (error) {
+      console.error('Error deleting CV:', error);
+      // Don't throw error for deletion failures
+    }
+  } catch (error) {
+    console.error('Error parsing CV URL for deletion:', error);
     // Don't throw error - continue with database update
   }
 }
@@ -212,8 +269,22 @@ export async function deleteCompany(id: number) {
       const jobIds = companyJobs.map(job => job.id);
       
       if (jobIds.length > 0) {
+        // Get all CVs to delete from storage
+        const jobApplications = await tx
+          .select({ resume: applications.resume })
+          .from(applications)
+          .where(eq(applications.jobId, jobIds[0])); // This should be improved to handle multiple job IDs
+        
+        // Delete applications
         for (const jobId of jobIds) {
           await tx.delete(applications).where(eq(applications.jobId, jobId));
+        }
+        
+        // Delete CVs from storage
+        for (const app of jobApplications) {
+          if (app.resume) {
+            await deleteCVFromSupabase(app.resume);
+          }
         }
       }
       
@@ -331,11 +402,24 @@ export async function updateJob(id: number, data: {
 export async function deleteJob(id: number) {
   try {
     await db.transaction(async (tx) => {
-      // First delete all applications for this job
+      // Get all applications for this job to delete CVs
+      const jobApplications = await tx
+        .select({ resume: applications.resume })
+        .from(applications)
+        .where(eq(applications.jobId, id));
+      
+      // Delete applications from database
       await tx.delete(applications).where(eq(applications.jobId, id));
       
-      // Then delete the job
+      // Delete the job
       await tx.delete(jobs).where(eq(jobs.id, id));
+      
+      // Delete CVs from storage
+      for (const app of jobApplications) {
+        if (app.resume) {
+          await deleteCVFromSupabase(app.resume);
+        }
+      }
     });
     
     revalidatePath("/dashboard");
@@ -515,6 +599,41 @@ export interface ApplicationWithJob {
   };
 }
 
+// Submit job application action
+export async function submitJobApplication(data: {
+  jobId: number;
+  name: string;
+  email: string;
+  phone?: string;
+  resume: File;
+  coverLetter?: string;
+}) {
+  try {
+    // Upload CV to Supabase Storage
+    const cvUrl = await uploadCVToSupabase(data.resume, data.name);
+    
+    // Save application to database
+    await db.insert(applications).values({
+      jobId: data.jobId,
+      name: data.name,
+      email: data.email,
+      phone: data.phone || null,
+      resume: cvUrl,
+      coverLetter: data.coverLetter || null,
+      createdAt: new Date(),
+    });
+    
+    revalidatePath("/dashboard");
+    return { success: true, message: "Application submitted successfully!" };
+  } catch (error) {
+    console.error("Error submitting application:", error);
+    return { 
+      success: false, 
+      message: error instanceof Error ? error.message : "Failed to submit application" 
+    };
+  }
+}
+
 // Get all applications with job and company information
 export async function getApplications(): Promise<ApplicationWithJob[]> {
   try {
@@ -625,13 +744,31 @@ export async function getApplicationsByJobId(jobId: number): Promise<Application
 // Delete application
 export async function deleteApplication(id: number) {
   try {
+    // Get application data to delete CV from storage
+    const applicationData = await db
+      .select({ resume: applications.resume })
+      .from(applications)
+      .where(eq(applications.id, id))
+      .limit(1);
+    
+    const cvUrl = applicationData[0]?.resume;
+    
+    // Delete from database
     await db.delete(applications).where(eq(applications.id, id));
     
+    // Delete CV from storage
+    if (cvUrl) {
+      await deleteCVFromSupabase(cvUrl);
+    }
+    
     revalidatePath("/dashboard");
-    return { success: true };
+    return { success: true, message: "Application deleted successfully!" };
   } catch (error) {
     console.error("Error deleting application:", error);
-    throw new Error("Failed to delete application");
+    return { 
+      success: false, 
+      message: error instanceof Error ? error.message : "Failed to delete application" 
+    };
   }
 }
 

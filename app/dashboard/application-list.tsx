@@ -5,7 +5,8 @@ import { motion } from "motion/react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Eye, Download, Mail, Calendar, User, FileText, Phone, Building2 } from "lucide-react";
+import { Eye, Download, Mail, Calendar, User, FileText, Phone, Building2, Trash, AlertTriangle } from "lucide-react";
+import { deleteApplication } from "./actions";
 import {
   Dialog,
   DialogContent,
@@ -14,6 +15,17 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import type { ApplicationWithJob } from "./actions";
 
 interface ApplicationListProps {
@@ -23,6 +35,7 @@ interface ApplicationListProps {
 
 export function ApplicationList({ applications, jobId }: ApplicationListProps) {
   const [selectedApplication, setSelectedApplication] = useState<ApplicationWithJob | null>(null);
+  const [isDeleting, setIsDeleting] = useState<number | null>(null);
 
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat('en-US', {
@@ -53,6 +66,20 @@ export function ApplicationList({ applications, jobId }: ApplicationListProps) {
     const subject = encodeURIComponent(`Re: Application for ${jobTitle}`);
     const mailtoUrl = `mailto:${email}?subject=${subject}`;
     window.open(mailtoUrl, '_blank');
+  };
+
+  const handleDeleteApplication = async (id: number) => {
+    setIsDeleting(id);
+    try {
+      const result = await deleteApplication(id);
+      if (!result.success) {
+        console.error("Failed to delete application:", result.message);
+      }
+    } catch (error) {
+      console.error("Error deleting application:", error);
+    } finally {
+      setIsDeleting(null);
+    }
   };
 
   if (applications.length === 0) {
@@ -267,6 +294,44 @@ export function ApplicationList({ applications, jobId }: ApplicationListProps) {
                     >
                       <Mail size={16} />
                     </Button>
+
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="icon"
+                          className="h-8 w-8 hover:bg-red-50 hover:text-red-600"
+                          title="Delete Application"
+                          disabled={isDeleting === application.id}
+                        >
+                          {isDeleting === application.id ? (
+                            <div className="w-4 h-4 border-2 border-red-600/30 border-t-red-600 rounded-full animate-spin" />
+                          ) : (
+                            <Trash size={16} />
+                          )}
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle className="flex items-center gap-2">
+                            <AlertTriangle size={20} className="text-red-600" />
+                            Delete Application
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete the application from "{application.name}"? This action cannot be undone and will permanently remove the application and associated CV file.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDeleteApplication(application.id)}
+                            className="bg-red-600 hover:bg-red-700"
+                          >
+                            Delete Application
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </TableCell>
               </motion.tr>
