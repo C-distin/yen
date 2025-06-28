@@ -3,7 +3,7 @@
 import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
 import { companies, jobs, applications } from "@/lib/db/schema";
-import { eq, count, desc } from "drizzle-orm";
+import { eq, count, desc, inArray } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
 
@@ -264,7 +264,7 @@ export async function deleteCompany(id: number) {
     const logoUrl = companyData[0]?.logo;
     
     await db.transaction(async (tx) => {
-      // First delete all applications for jobs of this company
+      // First get all jobs for this company
       const companyJobs = await tx.select({ id: jobs.id }).from(jobs).where(eq(jobs.companyId, id));
       const jobIds = companyJobs.map(job => job.id);
       
@@ -273,12 +273,10 @@ export async function deleteCompany(id: number) {
         const jobApplications = await tx
           .select({ resume: applications.resume })
           .from(applications)
-          .where(eq(applications.jobId, jobIds[0])); // This should be improved to handle multiple job IDs
+          .where(inArray(applications.jobId, jobIds));
         
         // Delete applications
-        for (const jobId of jobIds) {
-          await tx.delete(applications).where(eq(applications.jobId, jobId));
-        }
+        await tx.delete(applications).where(inArray(applications.jobId, jobIds));
         
         // Delete CVs from storage
         for (const app of jobApplications) {
